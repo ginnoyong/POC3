@@ -120,6 +120,8 @@ If you don't know the answer, just say that you don't know, do not make up answe
 Do not make up admission exercises that do not exist. 
 Keep the answer as concise as possible. 
 Always say "Hope this answers your question!" at the end of your answer. 
+Previous conversation:
+{chat_history}
 <context>
 {context}
 </context>
@@ -127,7 +129,11 @@ Question:{question}
 Helpful Answer:
 """
 
-QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
+#QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
+QA_CHAIN_PROMPT = PromptTemplate(
+    template=template,
+    input_variables=["chat_history", "context", "question"],
+    )
 
 #~~~~~~~~ ChatOpenAI and MultiQueryRetriever code
 from langchain_openai import ChatOpenAI
@@ -144,21 +150,33 @@ retriever=vectordb.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type
 
 #~~~~~~~~ RetrievalQA code
 from langchain.chains import RetrievalQA
+from langchain.memory import ConversationBufferMemory
+memory = ConversationBufferMemory(memory_key="chat_history",input_key="question",)
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
     retriever=retriever,
     return_source_documents=True, # Make inspection of document possible
-    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
+    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
+                       "memory":memory,},
+    
 )
 
 #~~~~~~~~ Invoke and Response
-response = qa_chain.invoke("I have a N-level cert and i want to join a poly. what admission exercise should i register for?")
+response = qa_chain.invoke("I have a N-level cert, what admission exercises am i eligible for?")
 
 #print(response)
-#print(len(response.get('source_documents')))
 
 print(response.get('result'))
+
+#~~~~~~~~ Invoke and Response - 2
+response = qa_chain.invoke("only those that lead me to join a poly.")
+
+#print(response)
+
+print(response.get('result'))
+
+#print(len(response.get('source_documents')))
 
 #for i in range(len(response.get('source_documents'))):
 #    print(f"""\n\n###{i}:\n{response.get('source_documents')[i].metadata.get('description')}\n{response.get('source_documents')[i].metadata.get('source')}\n""")
