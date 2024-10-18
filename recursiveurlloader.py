@@ -129,11 +129,11 @@ Question:{question}
 Helpful Answer:
 """
 
-#QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
-QA_CHAIN_PROMPT = PromptTemplate(
-    template=template,
-    input_variables=["chat_history", "context", "question"],
-    )
+QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
+#QA_CHAIN_PROMPT = PromptTemplate(
+#    template=template,
+#    input_variables=["chat_history", "context", "question"],
+#    )
 
 #~~~~~~~~ ChatOpenAI and MultiQueryRetriever code
 from langchain_openai import ChatOpenAI
@@ -148,7 +148,7 @@ retriever=vectordb.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type
 #)
 
 
-#~~~~~~~~ RetrievalQA code
+#~~~~~~~~ RetrievalQA and ConversationBufferMemory code
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 memory = ConversationBufferMemory(memory_key="chat_history",input_key="question",)
