@@ -162,6 +162,9 @@ qa_chain = RetrievalQA.from_chain_type(
     
 )
 
+#~~~ use this to clear the buffer memory when starting over
+#memory.clear()
+
 #~~~~~~~~ Invoke and Response
 response = qa_chain.invoke("I have a N-level cert, what admission exercises am i eligible for?")
 
