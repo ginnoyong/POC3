@@ -178,10 +178,9 @@ qa_chain = RetrievalQA.from_chain_type(
     
 )
 
-
 #~~~~~~~~ Invoke and Response
-response = qa_chain.invoke("I have a N-level cert, what admission exercises am i eligible for?")
-print(response.get('result'))
+#response = qa_chain.invoke("I have a N-level cert, what admission exercises am i eligible for?")
+#print(response.get('result'))
 
 #print(memory)
 #~~~ use this to clear the buffer memory when starting over
@@ -189,16 +188,16 @@ print(response.get('result'))
 
 
 #~~~~~~~~ Invoke and Response - 2
-response = qa_chain.invoke("only those that lead me to join a poly.")
-print(response.get('result'))
+#response = qa_chain.invoke("only those that lead me to join a poly.")
+#print(response.get('result'))
 
 #~~~~~~~~ Invoke and Response - 3
-response = qa_chain.invoke("yes, please.")
-print(response.get('result'))
+#response = qa_chain.invoke("yes, please.")
+#print(response.get('result'))
 
 #~~~~~~~~ Invoke and Response - 4
-response = qa_chain.invoke("PFP.")
-print(response.get('result'))
+#response = qa_chain.invoke("PFP.")
+#print(response.get('result'))
 
 
 #print(len(response.get('source_documents')))
@@ -206,8 +205,10 @@ print(response.get('result'))
 #for i in range(len(response.get('source_documents'))):
 #    print(f"""\n\n###{i}:\n{response.get('source_documents')[i].metadata.get('description')}\n{response.get('source_documents')[i].metadata.get('source')}\n""")
 
-print(memory.load_memory_variables({}))
+from datetime import datetime
 
 def invoke_question(user_message):
-    response = qa_chain.invoke(user_message)
+    today_date=datetime.today().strftime('%d/%m/%Y')
+    response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
+    print(memory.load_memory_variables({}))
     return response.get('result')
