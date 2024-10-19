@@ -39,6 +39,10 @@ for doc in docs:
 from langchain_openai import OpenAIEmbeddings
 embeddings_model = OpenAIEmbeddings(model='text-embedding-3-small')
 
+#~~~~~~~~ ChatOpenAI llm
+from langchain_openai import ChatOpenAI
+llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
+
 
 #~~~~~~~~ Select type of splitters to use, remove comment tags to use
 #~~~~~~~~ splitter: HTMLSectionSplitter
@@ -108,25 +112,40 @@ vectordb = Chroma.from_documents(combined_splitted_docs, embeddings_model, colle
 
 #retriever.add_documents(docs, ids=None)
 
+#~~~~~~~~ ConversationBufferMemory code
+from langchain.memory import ConversationBufferMemory, ConversationSummaryMemory
+# memory = ConversationBufferMemory(memory_key="chat_history",input_key="question")
+memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question")
+
 #~~~~~~~~ Prompt Template code
 from langchain.prompts import PromptTemplate
 
+
 # Build prompt
 template = """
-Use the following pieces of context, delimited by <context> to answer the question at the end. \
-Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
-    are also Admission Exercises. 
-If you don't know the answer, just say that you don't know, do not make up answers. \
-Do not make up admission exercises that do not exist. 
-Keep the answer as concise as possible. 
-Always say "Hope this answers your question!" at the end of your answer. 
 Previous conversation:
 {chat_history}
+
+You are an expert in Post-Secondary School Education admission matters in Singapore.
+Use the following pieces of context, delimited by <context> to answer the question at the end. \
+Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
+    are also Admission Exercises.
+If the question is not about Post-Secondary School Education admission matters in Singapore, \
+    remind the user what your job is and provide an example what he/she can ask.  
+If you don't know the answer, just say that you don't know, do not make up answers. \
+Do not make up admission exercises that do not exist. 
+Be polite. Keep the answer as concise as possible. 
+Add a line break. 
+Think about what the user might want to ask about next \
+    and suggest with 'Would you also like to find out...' after that.
+
 <context>
 {context}
 </context>
+
 Question:{question}
 Helpful Answer:
+Would you also like to find out:
 """
 
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
@@ -135,23 +154,20 @@ QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 #    input_variables=["chat_history", "context", "question"],
 #    )
 
-#~~~~~~~~ ChatOpenAI and MultiQueryRetriever code
-from langchain_openai import ChatOpenAI
-#from langchain.retrievers.multi_query import MultiQueryRetriever
 
-llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
-#~~~ comment out if using ParentDocumentRetriever
+#~~~~~~~ Retriever code
+
 retriever=vectordb.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
 
+#~~~~~~ if using MultiQueryRetriever
+#from langchain.retrievers.multi_query import MultiQueryRetriever
 #retriever_multiquery = MultiQueryRetriever.from_llm(
 #  retriever=retriever, llm=llm,
 #)
 
 
-#~~~~~~~~ RetrievalQA and ConversationBufferMemory code
+#~~~~~~~~ RetrievalQA code
 from langchain.chains import RetrievalQA
-from langchain.memory import ConversationBufferMemory
-memory = ConversationBufferMemory(memory_key="chat_history",input_key="question",)
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
@@ -162,24 +178,36 @@ qa_chain = RetrievalQA.from_chain_type(
     
 )
 
-#~~~ use this to clear the buffer memory when starting over
-#memory.clear()
 
 #~~~~~~~~ Invoke and Response
 response = qa_chain.invoke("I have a N-level cert, what admission exercises am i eligible for?")
-
-#print(response)
-
 print(response.get('result'))
+
+#print(memory)
+#~~~ use this to clear the buffer memory when starting over
+#memory.clear()
+
 
 #~~~~~~~~ Invoke and Response - 2
 response = qa_chain.invoke("only those that lead me to join a poly.")
-
-#print(response)
-
 print(response.get('result'))
+
+#~~~~~~~~ Invoke and Response - 3
+response = qa_chain.invoke("yes, please.")
+print(response.get('result'))
+
+#~~~~~~~~ Invoke and Response - 4
+response = qa_chain.invoke("PFP.")
+print(response.get('result'))
+
 
 #print(len(response.get('source_documents')))
 
 #for i in range(len(response.get('source_documents'))):
 #    print(f"""\n\n###{i}:\n{response.get('source_documents')[i].metadata.get('description')}\n{response.get('source_documents')[i].metadata.get('source')}\n""")
+
+print(memory.load_memory_variables({}))
+
+def invoke_question(user_message):
+    response = qa_chain.invoke(user_message)
+    return response.get('result')
