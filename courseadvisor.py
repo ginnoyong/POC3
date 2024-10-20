@@ -9,12 +9,12 @@ def bs4_extractor(html: str) -> str:
     return re.sub(r"\n\n+", "\n\n", soup.text).strip()
 
 loader_courses = RecursiveUrlLoader(
-    #"https://www.moe.gov.sg/coursefinder?journey=ITE",
-    "https://www.moe.gov.sg/coursefinder?journey=Polytechnics",
+    #"https://www.np.edu.sg/schools-courses/academic-schools",
+    "https://www.moe.gov.sg/coursefinder/coursedetail",
     #"https://docs.python.org/3.9/",
     #~~~ do not use bs4_extractor if using HTML splitters
     #extractor=bs4_extractor,
-    max_depth=2,
+    max_depth=3,
     # use_async=False,
     # metadata_extractor=None,
     # exclude_dirs=(),
@@ -36,14 +36,28 @@ embeddings_model = OpenAIEmbeddings(model='text-embedding-3-small')
 from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
 
-#~~~~~~~~ Chroma Vector Store code
+###############
+import os
+os.environ["SERPER_API_KEY"] = "2bdc6f17f95bd25365f22b96cea3f14895d480e1"
+
+from langchain.utilities import GoogleSerperAPIWrapper
+googleSerperAPIWrapper = GoogleSerperAPIWrapper()
+
+from langchain.retrievers.web_research import WebResearchRetriever
+
 from langchain_chroma import Chroma
-vectordb_courses = Chroma.from_documents(docs_courses, embeddings_model, collection_name='courses', persist_directory='./vector_db')
+vectordb_courses = Chroma(embedding_function=embeddings_model, collection_name='courses2', persist_directory='./vector_db')
+web_search_retriever = WebResearchRetriever.from_llm(
+    vectorstore=vectordb_courses, llm=llm, search=googleSerperAPIWrapper
+)
 
-retriever_courses = vectordb_courses.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
+###############
 
-response = retriever_courses.invoke("list all the accountancy courses.")
-
+#~~~~~~~~ Chroma Vector Store code
+#from langchain_chroma import Chroma
+#vectordb_courses = Chroma.from_documents(docs_courses, embeddings_model, collection_name='courses', persist_directory='./vector_db')
+#print(len(docs_courses))
+#retriever_courses = vectordb_courses.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
 
 #~~~~~~~~ Prompt Template code
 from langchain.prompts import PromptTemplate
@@ -54,7 +68,7 @@ template = """
 Previous conversation:
 {chat_history}
 
-You are an expert in Post-Secondary School Education shools and coures in Singapore.
+You are an expert in Post-Secondary School Education schools and coures in Singapore.
 Use the following pieces of context, delimited by <context> to answer the question at the end. 
 
 Note that: 
@@ -71,7 +85,7 @@ The aggregate score range of a course provides a reference of the aggregate scor
     Student B will have medium chance of being accepted because his/her aggregate score is within the course's Aggregate Score range. \
     Student C will have low high chance of being accepted because his/her aggregate score is within the course's Aggregate Score range.
 
-If the question is not about Post-Secondary School Education courses in Singapore, \
+If the question is not about Post-Secondary School Education schools and courses in Singapore, \
     remind the user what your job is and provide an example what he/she can ask.  
 If you don't know the answer, just say that you don't know, do not make up answers. \
 Do not make up courses that do not exist. 
@@ -91,14 +105,24 @@ Would you also like to find out:
 
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
+#~~~~~~~~ ConversationBufferMemory code
+from langchain.memory import ConversationSummaryMemory
+# memory = ConversationBufferMemory(memory_key="chat_history",input_key="question")
+memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question")
+
 #~~~~~~~~ RetrievalQA code
 from langchain.chains import RetrievalQA
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
-    retriever=retriever,
+    retriever=web_search_retriever,
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
                        "memory":memory,},
-    
 )
+
+#~~~~~~~~ Invoke and Response
+response = qa_chain.invoke("List all accountancy courses.")
+print(response.get('result'))
+
+print(memory)
