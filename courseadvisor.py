@@ -10,7 +10,7 @@ def bs4_extractor(html: str) -> str:
 
 loader_courses = RecursiveUrlLoader(
     #"https://www.np.edu.sg/schools-courses/academic-schools",
-    "https://www.moe.gov.sg/coursefinder/coursedetail",
+    "https://www.moe.gov.sg/coursefinder/coursedetail?",
     #"https://docs.python.org/3.9/",
     #~~~ do not use bs4_extractor if using HTML splitters
     #extractor=bs4_extractor,
@@ -36,19 +36,16 @@ embeddings_model = OpenAIEmbeddings(model='text-embedding-3-small')
 from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
 
-###############
-import os
-os.environ["SERPER_API_KEY"] = "2bdc6f17f95bd25365f22b96cea3f14895d480e1"
-
-from langchain.utilities import GoogleSerperAPIWrapper
-googleSerperAPIWrapper = GoogleSerperAPIWrapper()
+from langchain_community.utilities import GoogleSearchAPIWrapper
+search = GoogleSearchAPIWrapper()
 
 from langchain.retrievers.web_research import WebResearchRetriever
 
 from langchain_chroma import Chroma
-vectordb_courses = Chroma(embedding_function=embeddings_model, collection_name='courses2', persist_directory='./vector_db')
+vectordb_courses = Chroma(embedding_function=embeddings_model, collection_name='courses', persist_directory='./vector_db')
 web_search_retriever = WebResearchRetriever.from_llm(
-    vectorstore=vectordb_courses, llm=llm, search=googleSerperAPIWrapper
+    vectorstore=vectordb_courses, llm=llm, search=search,
+    allow_dangerous_requests=True,
 )
 
 ###############
