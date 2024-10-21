@@ -1,4 +1,4 @@
-import recursiveurlloader
+import admissionadvisor
 
 from langchain_community.document_loaders import RecursiveUrlLoader
 import re
@@ -11,13 +11,13 @@ load_dotenv('.env')
 #    soup = BeautifulSoup(html, features="html.parser")
 #    return re.sub(r"\n\n+", "\n\n", soup.text).strip()
 
-#loader_courses = RecursiveUrlLoader(
+loader_courses = RecursiveUrlLoader(
     #"https://www.np.edu.sg/schools-courses/academic-schools",
-#    "https://www.moe.gov.sg/coursefinder/coursedetail?",
+    "https://www.moe.gov.sg/coursefinder/*",
     #"https://docs.python.org/3.9/",
     #~~~ do not use bs4_extractor if using HTML splitters
     #extractor=bs4_extractor,
-#    max_depth=3,
+    max_depth=2,
     # use_async=False,
     # metadata_extractor=None,
     # exclude_dirs=(),
@@ -27,9 +27,9 @@ load_dotenv('.env')
     # prevent_outside=True,
     # base_url=None,
     # ...
-#)
+)
 
-#docs_courses = loader_courses.load()
+docs_courses = loader_courses.load()
 
 #~~~~~~~~ Embeddings code
 from langchain_openai import OpenAIEmbeddings
@@ -79,7 +79,7 @@ retriever = WebResearchRetriever.from_llm(
     vectorstore=vectordb_courses, llm=llm, search=search,
 #    vectorstore=vectordb_courses, llm=llm_with_tools, search=search,
     allow_dangerous_requests=True,
-    num_search_results=3,
+    num_search_results=5,
 )
 #retriever = vectordb_courses.as_retriever(llm=llm_with_tools, search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
 #retriever = vectordb_courses.as_retriever(llm=llm, search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
@@ -97,12 +97,20 @@ from langchain.prompts import PromptTemplate
 
 
 # Build prompt
+#Previous conversation:
+#{chat_history}
+
 template = """
-Previous conversation:
-{chat_history}
 
 You are an expert in Post-Secondary School Education schools and coures in Singapore.
 Use the following pieces of context, delimited by <context> to answer the question at the end. 
+
+If the question is not about Post-Secondary School Education in Singapore, \
+    remind the user what your job is and provide an example what he/she can ask.  
+If you don't know the answer, just say that you don't know, NEVER make up answers. \
+NEVER make up schools or courses that do not exist.
+Do not include University courses in your response. 
+Your answer should be specific and targetted to the user's question. 
 
 Note that: 
 Aggregate refers to aggregate scores used in Joint Admission Exercise (JAE).
@@ -118,13 +126,7 @@ The aggregate score range of a course provides a reference of the aggregate scor
     Student B will have medium chance of being accepted because his/her aggregate score is within the course's Aggregate Score range. \
     Student C will have low high chance of being accepted because his/her aggregate score is within the course's Aggregate Score range.
 
-If the question is not about Post-Secondary School Education in Singapore, \
-    remind the user what your job is and provide an example what he/she can ask.  
-If you don't know the answer, just say that you don't know, do not make up answers. \
-Do not make up schools or courses that do not exist.
-Do not include University courses in your response. 
-Your answer should be specific and targetted to the user's question. 
-Include the course webpage links in your response. 
+Always include the course webpage links in your response. 
 Be polite. Keep the answer as concise as possible. 
 Add a line break. 
 Think about what the user might want to ask about next \
@@ -155,7 +157,7 @@ qa_chain = RetrievalQA.from_chain_type(
     retriever=retriever,
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
-                       "memory":memory,
+                       #"memory":memory,
                        "verbose":True},
 )
 
@@ -168,22 +170,23 @@ text_splitter = RecursiveCharacterTextSplitter(
     # length_function=count_tokens
 )
 
-def tool_vectordb_qachain_invoke(user_message):
+def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
     #vectordb_courses.from_texts(splitted_text)
     response = qa_chain.invoke(user_message)
-    return response
+    vectordb_courses.reset_collection()
+    return response.get('result')
 
 #~~~~~~~~ Invoke and Response
-response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
-print(response.get('result'))
+#response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
+#print(response.get('result'))
 #~~~~~~~~ Invoke and Response
-response = tool_vectordb_qachain_invoke("List all accountancy-related courses in all the polytechnics.")
-print(response.get('result'))
+#response = tool_vectordb_qachain_invoke("List all accountancy-related courses in all the polytechnics.")
+#print(response.get('result'))
 #~~~~~~~~ Invoke and Response
-response = tool_vectordb_qachain_invoke("tell me about the accountancy course in NYP?")
-print(response.get('result'))
+#response = tool_vectordb_qachain_invoke("tell me about the accountancy course in NYP?")
+#print(response.get('result'))
 
 #print(memory)
 
