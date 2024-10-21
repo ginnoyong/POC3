@@ -60,7 +60,7 @@ from langchain_experimental.text_splitter import SemanticChunker
 # Create the text splitter
 semantic_text_splitter = SemanticChunker(embeddings_model)
 
-#~~~~~~~~ slitter: RecursiveCharacterTextSplitter
+#~~~~~~~~ splitter: RecursiveCharacterTextSplitter
 #from langchain_text_splitters import RecursiveCharacterTextSplitter
 #text_splitter = RecursiveCharacterTextSplitter(
 #    separators=["\n\n", "\n", " ", ""],
