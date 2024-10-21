@@ -39,8 +39,8 @@ embeddings_model = OpenAIEmbeddings(model='text-embedding-3-small')
 from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
 
-from langchain_google_community import GoogleSearchAPIWrapper
-#from langchain_community.utilities import GoogleSearchAPIWrapper
+#from langchain_google_community import GoogleSearchAPIWrapper
+from langchain_community.utilities import GoogleSearchAPIWrapper
 search = GoogleSearchAPIWrapper()
 
 from langchain_core.tools import Tool
@@ -75,13 +75,13 @@ from langchain_community.retrievers.web_research import WebResearchRetriever
 
 from langchain_chroma import Chroma
 vectordb_courses = Chroma(embedding_function=embeddings_model, collection_name='courses', persist_directory='./vector_db')
-#web_search_retriever = WebResearchRetriever.from_llm(
-    #vectorstore=vectordb_courses, llm=llm, search=search,
+retriever = WebResearchRetriever.from_llm(
+    vectorstore=vectordb_courses, llm=llm, search=search,
 #    vectorstore=vectordb_courses, llm=llm_with_tools, search=search,
-#    allow_dangerous_requests=True,
-#    num_search_results=3,
-#)
-retriever = vectordb_courses.as_retriever(llm=llm_with_tools, search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
+    allow_dangerous_requests=True,
+    num_search_results=3,
+)
+#retriever = vectordb_courses.as_retriever(llm=llm_with_tools, search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
 #retriever = vectordb_courses.as_retriever(llm=llm, search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
 
 ###############
@@ -185,6 +185,5 @@ print(response.get('result'))
 response = tool_vectordb_qachain_invoke("tell me about the accountancy course in NYP?")
 print(response.get('result'))
 
-
-print(memory)
+#print(memory)
 
