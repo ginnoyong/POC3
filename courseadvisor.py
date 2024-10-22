@@ -16,6 +16,9 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
 
 #~~~~~~~~~ using the deprecated langchain_community.utilities version cos it works with WebResearchRetriever
+#~~~~~ unable to use RecursiveUrlLoader to crawl moe course finder website, think data is behind a dynamic api call
+#~~~~~ unable to use RecursiveUrlLoader to crawl individual polytechnic websites, too many pages, got rate limit error trying to do embedding
+#~~~~~ resort to using google api search to augment the context info
 # the GOOGLE_API_KEY and GOOGLE_CSE_ID keys are essential here
 #from langchain_google_community import GoogleSearchAPIWrapper
 from langchain_community.utilities import GoogleSearchAPIWrapper
@@ -87,11 +90,12 @@ Helpful Answer:
 Would you also like to find out:
 """
 
+#~~~~~~~~ the prompt template
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
 #~~~~~~~~ ConversationBufferMemory code
 from langchain.memory import ConversationSummaryMemory
-# memory = ConversationBufferMemory(memory_key="chat_history",input_key="question")
+# keep the same memory between both chat functions
 memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question")
 
 #~~~~~~~~ RetrievalQA code
@@ -104,26 +108,21 @@ qa_chain = RetrievalQA.from_chain_type(
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
                        "memory":memory,
-                       "verbose":True},
+                       "verbose":False},
 )
 
-#~~~~~~~~ splitter: RecursiveCharacterTextSplitter
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-text_splitter = RecursiveCharacterTextSplitter(
-    separators=["\n\n", "\n", " ", ""],
-#    chunk_size=500,
-    # chunk_overlap=50,
-    # length_function=count_tokens
-)
 
+#~~~~ invoke function to call from streamlit form
 def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
     #vectordb_courses.from_texts(splitted_text)
     response = qa_chain.invoke(user_message)
+    # find that reseting the vectordb_courses collection produces better responses. 
     vectordb_courses.reset_collection()
     return response.get('result')
 
+#~~~~~~~~~~~~~~~~ Testing code
 #~~~~~~~~ Invoke and Response
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
 #print(response.get('result'))

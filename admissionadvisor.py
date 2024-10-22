@@ -28,8 +28,9 @@ docs = loader.load()
 #print(f"""\n\n#####\n{docs[0].metadata}\n{docs[0].page_content}\n""")
 #print(f"""\n\n#####\n{docs[1].metadata}\n{docs[1].page_content}\n""")
 
-#~~~~~~~~ If using HTMLSectionSplitter Code
-#~~~~ RecursiveUrlLoader gives metadata['title'] but HTMLSectionSplitter.split_documents expects metadata['Title'] 
+#~~~~~~~~ HTMLSectionSplitter
+#~~~~ this code is to resolve incompatibility issue
+#~~~~ RecursiveUrlLoader produces metadata['title'] but HTMLSectionSplitter.split_documents expects metadata['Title'] 
 for doc in docs:
    doc.metadata['Title']=doc.metadata.get('title')
 #print(docs[0].metadata)
@@ -54,7 +55,8 @@ html_splitted_docs = html_splitter.split_documents(documents=(docs))
 #print(len(html_splitted_docs))
 
 
-#~~~~~~~~ slitter: SemanticChunker 
+#~~~~~~~~~~~~~~~~ Combine both Website and PDF documents for better RAG results. 
+#~~~~~~~~ splitter: SemanticChunker 
 from langchain_experimental.text_splitter import SemanticChunker
 
 # Create the text splitter
@@ -79,8 +81,8 @@ loader = PyPDFLoader(file_path)
 pdf_docs = loader.load()
 
 splitted_pdf_docs = semantic_text_splitter.split_documents(pdf_docs)
-#~~~~~~~~
 
+#~~~~~~~~
 combined_splitted_docs = []
 combined_splitted_docs.extend(splitted_pdf_docs)
 combined_splitted_docs.extend(html_splitted_docs)
@@ -123,19 +125,20 @@ from langchain.prompts import PromptTemplate
 
 # Build prompt
 template = """
-Previous conversation:
+<chat_history>
 {chat_history}
+</chat_history>
 
 You are an expert in Post-Secondary School Education admission matters in Singapore.
-Use the following pieces of context, delimited by <context> to answer the question at the end. \
-Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
-    are also Admission Exercises.
 If the question is not about Post-Secondary School Education admission matters in Singapore, \
     remind the user what your job is and provide an example what he/she can ask.  
+Use the chat history, delimited by <chat_history>, and the context information, delimited by <context> to answer the question at the end. \
+Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
+    are also Admission Exercises.
 If you don't know the answer, just say that you don't know, do not make up answers. \
 Do not make up admission exercises that do not exist. 
 Be polite. Keep the answer as concise as possible. 
-Add a line break. 
+Add a line break after your answer 
 Think about what the user might want to ask about next \
     and suggest with 'Would you also like to find out...' after that.
 
@@ -174,10 +177,12 @@ qa_chain = RetrievalQA.from_chain_type(
     retriever=retriever,
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
+                       "verbose":False,
                        "memory":memory,},
     
 )
 
+#~~~~~~~~~~~~~~~~ Test codes
 #~~~~~~~~ Invoke and Response
 #response = qa_chain.invoke("I have a N-level cert, what admission exercises am i eligible for?")
 #print(response.get('result'))
@@ -205,6 +210,8 @@ qa_chain = RetrievalQA.from_chain_type(
 #for i in range(len(response.get('source_documents'))):
 #    print(f"""\n\n###{i}:\n{response.get('source_documents')[i].metadata.get('description')}\n{response.get('source_documents')[i].metadata.get('source')}\n""")
 
+
+#~~~~~~~~ Include today's date in prompt for responses regarding admission matters to be date senstitive. 
 from datetime import datetime
 
 def admissions_invoke_question(user_message):
