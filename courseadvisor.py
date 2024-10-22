@@ -4,9 +4,14 @@ from langchain_community.document_loaders import RecursiveUrlLoader
 import re
 from bs4 import BeautifulSoup
 
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+try:
+    #~~~ only when deploying
+    __import__('pysqlite3')
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+    #~~~ only when deploying
+except:
+    pass
 
 from dotenv import load_dotenv
 if load_dotenv('.env'):
@@ -40,7 +45,7 @@ retriever = WebResearchRetriever.from_llm(
     vectorstore=vectordb_courses, llm=llm, search=search,
 #    vectorstore=vectordb_courses, llm=llm_with_tools, search=search,
     allow_dangerous_requests=True,
-    num_search_results=7,
+    num_search_results=8,
 )
 
 #~~~~~~~~ Prompt Template code
@@ -81,8 +86,8 @@ Steps to follow to generate your response:
 If you don't know the answer, just say that you don't know, NEVER make up answers. \
 NEVER make up schools / courses that do not exist.
 
-Be polite. Keep the answer as concise as possible. 
-
+Be polite. Keep the answer comprehensive and  concise. 
+Always add "For more informatio
 Add a line break at the end of your answer. 
 
 Think about what the user might want to ask about next \
