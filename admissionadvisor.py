@@ -2,6 +2,10 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 if load_dotenv('.env'):
    OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
 else:

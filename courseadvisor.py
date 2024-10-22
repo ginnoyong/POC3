@@ -4,6 +4,10 @@ from langchain_community.document_loaders import RecursiveUrlLoader
 import re
 from bs4 import BeautifulSoup
 
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 from dotenv import load_dotenv
 if load_dotenv('.env'):
    OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
