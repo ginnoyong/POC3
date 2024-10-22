@@ -1,12 +1,15 @@
-import admissionadvisor
-
+import os
+import streamlit as st
 from langchain_community.document_loaders import RecursiveUrlLoader
 import re
 from bs4 import BeautifulSoup
 
 from dotenv import load_dotenv
-load_dotenv('.env')
-
+if load_dotenv('.env'):
+   OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
+else:
+   OPENAI_API_KEY=st.secrets['OPENAI_API_KEY']
+   
 #~~~~~~~~ Embeddings code
 from langchain_openai import OpenAIEmbeddings
 embeddings_model = OpenAIEmbeddings(model='text-embedding-3-small')

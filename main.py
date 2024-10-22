@@ -4,8 +4,12 @@ import llm # <--- This is the helper function that we have created 🆕
 
 from admissionadvisor import admissions_invoke_question
 from courseadvisor import courses_invoke_question
-from helper_functions import categorise_prompt
+from logics import categorise_prompt
+from utility import check_password  
 
+# Check if the password is correct.  
+if not check_password():  
+    st.stop()
 
 # region <--------- Streamlit App Configuration --------->
 st.set_page_config(

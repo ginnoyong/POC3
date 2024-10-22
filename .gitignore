@@ -21,6 +21,7 @@ dist/
 .idea/
 
 # Streamlit
+.streamlit/
 .streamlit/secrets.toml
 
 vector_db/

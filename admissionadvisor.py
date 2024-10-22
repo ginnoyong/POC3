@@ -1,3 +1,12 @@
+import os
+import streamlit as st
+from dotenv import load_dotenv
+
+if load_dotenv('.env'):
+   OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
+else:
+   OPENAI_API_KEY=st.secrets['OPENAI_API_KEY']
+
 #~~~~~~~~ RecursiveUrlLoader Code
 from langchain_community.document_loaders import RecursiveUrlLoader
 import re
