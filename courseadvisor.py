@@ -45,7 +45,7 @@ retriever = WebResearchRetriever.from_llm(
     vectorstore=vectordb_courses, llm=llm, search=search,
 #    vectorstore=vectordb_courses, llm=llm_with_tools, search=search,
     allow_dangerous_requests=True,
-    num_search_results=10,
+    num_search_results=3,
 )
 
 #~~~~~~~~ Prompt Template code
