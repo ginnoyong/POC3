@@ -20,13 +20,8 @@ def categorise_prompt(user_prompt):
     return get_completion_by_messages(messages)
 
 def improve_message_courses(user_prompt):
-    system_prompt = """Your role is to improve the human question for a LLM chatbot designed \
-        to answer questions about Post-Secondary School Education schools and courses in Singapore.
-        The LLM chatbot works like this: First it makes an Internet search using Google's Custom Search JSON API \
-            for search results based on the human question. Then the search results are used as \
-            Retrieval Augmented Generation (RAG) context data in the final prompt to the chatbot. 
-        Your output should be an prompt that will make the Custom Search produce better and more \
-        comprehensive results.  
+    system_prompt = """Your role is to improve the human question for a LLM chatbot that will search the Internet for context augment the answer. 
+    
         The human question is delimited in <user_prompt>.
     """
 

@@ -45,7 +45,7 @@ retriever = WebResearchRetriever.from_llm(
     vectorstore=vectordb_courses, llm=llm, search=search,
 #    vectorstore=vectordb_courses, llm=llm_with_tools, search=search,
     allow_dangerous_requests=True,
-    num_search_results=8,
+    num_search_results=10,
 )
 
 #~~~~~~~~ Prompt Template code
@@ -69,13 +69,13 @@ Steps to follow to generate your response:
 1. If the question is not about Post-Secondary School Education in Singapore, \
     remind the user what your job is and provide an example what he/she can ask.
 2. Analyse the question and look for the relevant schools / courses provided in the context information. 
-3. You must extract these information of the schools / courses that you use in your answer: \
+3. You must always present these information of the schools / courses that you use in your answer: \
     a. Name of the JC, MI, Poly and/or ITE
-    b. Course name and course code (if applicable)
+    b. Course name and course code
     c. Aggregate score range, for example, 6 to 10, or 6 - 10, etc.
     d. Type of Aggregate score, for example, ELR2B2-A, L1R5, ELMAB3, etc.
-    e. 'Score' in the question is likely to refer to 'Aggregate Score'.
-4. Use this method to determine how good / likely will a student be accepted into a course / school \
+4. The word 'score' in the question is likely to refer to 'Aggregate Score'.
+5. Use these steps to determine how good / likely will a student be accepted into a course / school \
     based on his/her aggregate score: \
         a. Identify the aggregate score range of the course / school.
         b. Let A be the smaller number in the aggregate score range, B be the bigger number.
@@ -86,8 +86,7 @@ Steps to follow to generate your response:
 If you don't know the answer, just say that you don't know, NEVER make up answers. \
 NEVER make up schools / courses that do not exist.
 
-Be polite. Keep the answer comprehensive and  concise. 
-Always add "For more informatio
+Be polite. Keep the answer comprehensive and  concise.
 Add a line break at the end of your answer. 
 
 Think about what the user might want to ask about next \
@@ -135,10 +134,13 @@ def courses_invoke_question(user_message):
     response = qa_chain.invoke(user_message)
     # find that reseting the vectordb_courses collection produces better responses. 
     vectordb_courses.reset_collection()
-    return response.get('result'), memory.buffer
+    return response.get('result')
 
 def clear_memory():
    memory.clear()
+
+def get_chat_history():
+   return memory.buffer
 #~~~~~~~~~~~~~~~~ Testing code
 #~~~~~~~~ Invoke and Response
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
