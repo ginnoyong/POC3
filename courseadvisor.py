@@ -120,20 +120,25 @@ qa_chain = RetrievalQA.from_chain_type(
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
                        "memory":memory,
-                       "verbose":False},
+                       "verbose":True},
 )
 
 
 #~~~~ invoke function to call from streamlit form
+from logics import improve_message_courses
+
 def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
     #vectordb_courses.from_texts(splitted_text)
+    #user_message = improve_message_courses(user_message)
     response = qa_chain.invoke(user_message)
     # find that reseting the vectordb_courses collection produces better responses. 
     vectordb_courses.reset_collection()
-    return response.get('result')
+    return response.get('result'), memory.buffer
 
+def clear_memory():
+   memory.clear()
 #~~~~~~~~~~~~~~~~ Testing code
 #~~~~~~~~ Invoke and Response
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")

@@ -233,4 +233,7 @@ def admissions_invoke_question(user_message):
     today_date=datetime.today().strftime('%d/%m/%Y')
     response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
     print(memory.load_memory_variables({}))
-    return response.get('result')
+    return response.get('result'), memory.buffer
+
+def clear_memory():
+   memory.clear()
