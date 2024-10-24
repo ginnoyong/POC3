@@ -152,8 +152,9 @@ Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Fou
     are also Admission Exercises.
 If you don't know the answer, just say that you don't know, do not make up answers. \
 Do not make up admission exercises that do not exist. 
-Be polite. Keep the answer as concise as possible. 
-Add a line break after your answer 
+Be detailed with the information. Keep the answer as concise as possible.
+
+Add a line break after your answer. 
 Think about what the user might want to ask about next \
     and suggest with 'Would you also like to find out...' after that.
 
@@ -163,7 +164,6 @@ Think about what the user might want to ask about next \
 
 Question:{question}
 Helpful Answer:
-Would you also like to find out:
 """
 
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)

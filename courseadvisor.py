@@ -96,7 +96,7 @@ Steps to follow to generate your response:
 If you don't know the answer, just say that you don't know, NEVER make up answers. \
 NEVER make up any information that do not exist. Leave the value blank if you do not know.
 
-Your answer shall be a list of JSON objects of the schools/courses that fulfill the question \
+Your answer will be a list of JSON objects of the schools/courses that fulfill the question \
     each JSON object will contain key information of the schools/courses, such as: \
     School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc.
 Omit JSON keys that are not applicable. 
@@ -115,7 +115,8 @@ Examples: \
 "Aggregate Score Range":"11-16/7-9",
 "Aggregate Score Type":"ELR2B2-B/ELMAB3"}},
 ]
-Output the JSON object only with NO other delimiters.
+
+Output the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
 Add a line break at the end of your answer. 
 
 <context>
@@ -181,6 +182,9 @@ qa_chain = RetrievalQA.from_chain_type(
 
 #~~~~ invoke function to call from streamlit form
 from logics import improve_message_courses
+import pandas as pd
+import json
+import re
 
 def courses_invoke_question(user_message):
     #result=search.run(user_message)
@@ -191,8 +195,27 @@ def courses_invoke_question(user_message):
     response = qa_chain.invoke(user_message)
     print(vectordb_courses._collection.count())
     # find that reseting the vectordb_courses collection produces better responses. 
+    print(response.get('result'))
+
+    df_list=None
+    # Use a regular expression to extract the JSON content within <json> tags
+    json_strings = re.findall(r'<json_list>.+</json_list>', response.get('result'), flags = re.DOTALL)
+
+    if len(json_strings)>0:
+       json_strings = re.sub(r'</?json_list>','', json_strings[0])
+
+    try:
+        json_objs = json.loads(json_strings)
+        df_list = pd.json_normalize(json_objs)
+    except:
+       pass
+
+    response_text = re.sub(r'<json_list>.*</json_list>', '', response.get('result'), flags = re.DOTALL)
+
     vectordb_courses.reset_collection()
-    return response.get('result')
+
+    #return response.get('result')
+    return response_text, df_list
 
 def clear_memory():
    memory.clear()
