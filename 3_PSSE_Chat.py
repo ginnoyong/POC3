@@ -27,7 +27,7 @@ st.set_page_config(
 )
 # endregion <--------- Streamlit App Configuration --------->
 
-st.title("Post-Secondary School Education AI Chatbot")
+st.title("🎓 Post-Secondary School Education AI Chatbot")
 st.subheader(f"Ask questions about {st.session_state.prompt_category}")
 
 col1, col2, col3, col4 = st.columns(4)
