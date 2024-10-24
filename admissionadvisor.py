@@ -192,7 +192,7 @@ qa_chain = RetrievalQA.from_chain_type(
     retriever=retriever,
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
-                       "verbose":False,
+                       "verbose":True,
                        "memory":memory,},
     
 )
@@ -232,7 +232,7 @@ from datetime import datetime
 def admissions_invoke_question(user_message):
     today_date=datetime.today().strftime('%d/%m/%Y')
     response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
-    print(memory.load_memory_variables({}))
+    #print(memory.load_memory_variables({}))
     return response.get('result')
 
 def clear_memory():
