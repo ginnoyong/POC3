@@ -68,7 +68,7 @@ if form.form_submit_button("Submit"):
     #response = admissions_invoke_question(user_prompt)
     #prompt_category = categorise_prompt(user_prompt)
     #response = courses_invoke_question(user_prompt)
-    if check_malicious == 'N':
+    if check_malicious(user_prompt) == 'N':
         match st.session_state.prompt_category:
             case "Admissions":
                 response = admissions_invoke_question(user_prompt)
