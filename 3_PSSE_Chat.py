@@ -29,31 +29,31 @@ if "prompt_category" not in st.session_state:
 def select_admissions():
     st.session_state.prompt_category = "Admissions"
 
-def select_courses():
-    st.session_state.prompt_category = "Courses"
+def select_schools_courses():
+    st.session_state.prompt_category = "Schools/Courses"
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = ""
+    st.session_state.chat_history = None
 
 def start_over():
     match st.session_state.prompt_category:
         case "Admissions":
             cm_a()
-            st.session_state.chat_history = ""
-        case "Courses":
+            st.session_state.chat_history = None
+        case "Schools/Courses":
             cm_c()
-            st.session_state.chat_history = ""
+            st.session_state.chat_history = None
 
 def get_chat_history():
     match st.session_state.prompt_category:
         case "Admissions":
             st.session_state.chat_history = gch_a()
-        case "Courses":
+        case "Schools/Courses":
             st.session_state.chat_history = gch_c()
 
 st.sidebar.write(st.session_state.prompt_category)
 st.sidebar.button("Admissions", on_click=select_admissions)
-st.sidebar.button("Schools/Courses", on_click=select_courses)
+st.sidebar.button("Schools/Courses", on_click=select_schools_courses)
 st.sidebar.button("Start Over", on_click=start_over)
 
 df_list=None
@@ -68,9 +68,9 @@ if form.form_submit_button("Submit"):
     match st.session_state.prompt_category:
         case "Admissions":
             response = admissions_invoke_question(user_prompt)
-        case "Courses":
+        case "Schools/Courses":
             response, df_list = courses_invoke_question(user_prompt)
-            print(df_list.to_string())
+            #print(df_list.to_string())
         case _:
             response = "Please select one of the question categories to begin."
 
@@ -81,6 +81,8 @@ if form.form_submit_button("Submit"):
         pass
     else:
         st.dataframe(df_list)
+
+    #~~~ update chat history after each submit
     get_chat_history()
 
 with st.expander("Chat History"):
@@ -88,3 +90,4 @@ with st.expander("Chat History"):
     st.write(f'''
         {st.session_state.chat_history}
     ''')
+    #st.dataframe(st.session_state.chat_history)

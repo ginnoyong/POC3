@@ -132,17 +132,29 @@ QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 #~~~~~~~~ ConversationBufferMemory code
 from langchain.memory import ConversationSummaryMemory
 # keep the same memory between both chat functions
-memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question")
+memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question", return_messages=True)
+
+############ for testing
+#memory.save_context({"question":"poly and ITE"}, {"output": "please elaborate"})
+############
 
 #~~~~~~~~ Improve human prompt for MultiQueryRetriever to find wider, related results.
+from utility import convert_messages_to_llm_format
 from llm import get_completion_by_messages
+
 def improve_prompt(user_prompt):
-   sys_prompt = """Your task is to improve a user question that will be fed into LangChain's MultiQueryRetriever. 
-   Your improved prompt should be more concise and make the MultiQueryRetriever retrieve \
+    sys_prompt = """Your task is to improve a user question that will be fed into LangChain's MultiQueryRetriever. 
+    Your improved prompt should be more concise and make the MultiQueryRetriever retrieve \
     more schools and courses that is relevant to the user question. 
     Respond with only the prompt."""
-   messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
-   return get_completion_by_messages(messages = messages)
+    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
+    messages = [{"role": "system", "content": sys_prompt},]
+    #~~ inject chat history to improve the prompt
+    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    messages.extend(formatted_messages)
+    messages.extend([{"role": "user", "content": user_prompt}])
+    print(messages)
+    return get_completion_by_messages(messages = messages)
 
 #~~~~~~~~ MultiQueryRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -221,16 +233,23 @@ def clear_memory():
    memory.clear()
 
 def get_chat_history():
-   return memory.buffer
+    #formatted_chat_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    #return pd.json_normalize(formatted_chat_messages)
+    return memory.buffer
+
 #~~~~~~~~~~~~~~~~ Testing code
 #~~~~~~~~ Invoke and Response
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
 #print(response.get('result'))
 #~~~~~~~~ Invoke and Response
 #user_prompt = "all cybersecurity courses in poly"
-#user_prompt = improve_prompt("IT courses in poly and ITE")
+#user_prompt = improve_prompt("business courses")
 #print(user_prompt)
 #response = courses_invoke_question(user_prompt)
+#formatted_chat_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+
+#df_chat_history = pd.json_normalize(formatted_chat_messages)
+#print(df_chat_history.to_string)
 #print(response)
 #~~~~~~~~ Invoke and Response
 #response = tool_vectordb_qachain_invoke("tell me about the accountancy course in NYP?")

@@ -135,7 +135,7 @@ vectordb = Chroma.from_documents(combined_splitted_docs, embeddings_model, colle
 #~~~~~~~~ ConversationBufferMemory code
 from langchain.memory import ConversationBufferMemory, ConversationSummaryMemory
 # memory = ConversationBufferMemory(memory_key="chat_history",input_key="question")
-memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question")
+memory = ConversationSummaryMemory(llm=llm,memory_key="chat_history",input_key="question", return_messages=True)
 
 #~~~~~~~~ Prompt Template code
 from langchain.prompts import PromptTemplate
