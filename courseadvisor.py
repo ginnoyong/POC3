@@ -1,8 +1,5 @@
 import os
 import streamlit as st
-from langchain_community.document_loaders import RecursiveUrlLoader
-import re
-from bs4 import BeautifulSoup
 
 try:
     #~~~ only when deploying
@@ -33,8 +30,11 @@ llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)
 #~~~~~ resort to using google api search to augment the context info
 # the GOOGLE_API_KEY and GOOGLE_CSE_ID keys are essential here
 #from langchain_google_community import GoogleSearchAPIWrapper
+#from langchain_google_community.search import GoogleSearchAPIWrapper
 from langchain_community.utilities import GoogleSearchAPIWrapper
 search = GoogleSearchAPIWrapper(k=10)
+
+
 
 #~~~~~~~~ splitter: RecursiveCharacterTextSplitter
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -55,6 +55,7 @@ vectordb_courses = Chroma(embedding_function=embeddings_model, collection_name='
 from langchain_community.retrievers.web_research import WebResearchRetriever
 websearch_retriever = WebResearchRetriever.from_llm(
     vectorstore=vectordb_courses, llm=llm, search=search,
+#    vectorstore=vectordb_courses, llm=llm, search=tool,
 #    vectorstore=vectordb_courses, llm=llm_with_tools, search=search,
     allow_dangerous_requests=True,
     num_search_results=10,
@@ -186,6 +187,7 @@ def courses_invoke_question(user_message):
     #splitted_text = text_splitter(result)
     #vectordb_courses.from_texts(splitted_text)
     user_message = improve_prompt(user_message)
+    print(user_message)
     response = qa_chain.invoke(user_message)
     print(vectordb_courses._collection.count())
     # find that reseting the vectordb_courses collection produces better responses. 
@@ -202,7 +204,7 @@ def get_chat_history():
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
 #print(response.get('result'))
 #~~~~~~~~ Invoke and Response
-#user_prompt = "all IT courses in poly"
+#user_prompt = "all cybersecurity courses in poly"
 #user_prompt = improve_prompt("IT courses in poly and ITE")
 #print(user_prompt)
 #response = courses_invoke_question(user_prompt)
