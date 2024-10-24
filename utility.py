@@ -1,6 +1,9 @@
 import streamlit as st
 import random  
 import hmac  
+import pandas as pd
+import re
+import json
 
 def check_password():  
     """Returns `True` if the user had the correct password."""  
@@ -33,3 +36,23 @@ def convert_messages_to_llm_format(memory_messages):
         elif isinstance(message, AIMessage):
             formatted_messages.append({"role": "assistant", "content": message.content})
     return formatted_messages
+
+
+#~~~~~~~~ split JSON from response text, convert it to df
+def process_courses_response(response_text):
+    df_list=None
+    # Use a regular expression to extract the JSON content within <json> tags
+    json_strings = re.findall(r'<json_list>.+</json_list>', response_text, flags = re.DOTALL)
+
+    if len(json_strings)>0:
+       json_strings = re.sub(r'</?json_list>','', json_strings[0])
+
+    try:
+        json_objs = json.loads(json_strings)
+        df_list = pd.json_normalize(json_objs)
+    except:
+       pass
+
+    response_text = re.sub(r'<json_list>.*</json_list>', '', response_text, flags = re.DOTALL)
+
+    return response_text, df_list

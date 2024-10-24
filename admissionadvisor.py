@@ -148,16 +148,25 @@ template = """
 </chat_history>
 
 You are an expert in Post-Secondary School Education admission matters in Singapore.
+Your job is to provide detailed information about Post-Secondary School Education admission exercises \
+that are suitable to the user based on his/her question, delimited by <question>.
 If the question is not about Post-Secondary School Education admission matters in Singapore, \
-    remind the user what your job is and provide an example what he/she can ask.  
-Use the chat history, delimited by <chat_history>, and the context information, delimited by <context> to answer the question at the end. \
+    explain why you are not able to provide an answer and provide an example what he/she can ask.  
+Use the chat history, delimited by <chat_history>, and the context information, delimited by <context> to \
+    answer the user's question
 Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
     are also Admission Exercises.
 If you don't know the answer, just say that you don't know, do not make up answers. \
 Do not make up admission exercises that do not exist. 
-Be detailed with the information. Keep the answer as concise as possible.
 
-Add a line break after your answer. 
+Keep the answer as concise as possible.
+
+Provide this link (MOE Post-Secondary School Admissions)"https://www.moe.gov.sg/post-secondary/admissions" \
+at the end of your answer and advise the user to use it to \
+verify your answer. 
+
+Add a line break after your answer.
+
 Think about what the user might want to ask about next \
     and suggest with 'Would you also like to find out...' after that.
 
@@ -185,6 +194,23 @@ retriever=vectordb.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type
 #retriever_multiquery = MultiQueryRetriever.from_llm(
 #  retriever=retriever, llm=llm,
 #)
+
+#~~~ improve prompt for Admissions
+from utility import convert_messages_to_llm_format
+from llm import get_completion_by_messages
+def improve_prompt(user_prompt):
+    sys_prompt = """Your task is to improve a user question and turn it into a concise, single-sentence prompt \
+        that will be fed into LangChain's RetrievalQA. 
+        Your improved question should improve the retrieval outcome and \
+            ultimately improve the quality of the final response from the LLM. Respond with only the prompt."""
+    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
+    messages = [{"role": "system", "content": sys_prompt},]
+    #~~ inject chat history to improve the prompt
+    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    messages.extend(formatted_messages)
+    messages.extend([{"role": "user", "content": user_prompt}])
+    print(messages)
+    return get_completion_by_messages(messages = messages)
 
 
 #~~~~~~~~ RetrievalQA code
@@ -232,8 +258,10 @@ qa_chain = RetrievalQA.from_chain_type(
 #~~~~~~~~ Include today's date in prompt for responses regarding admission matters to be date senstitive. 
 from datetime import datetime
 
+@st.cache_data
 def admissions_invoke_question(user_message):
     today_date=datetime.today().strftime('%d/%m/%Y')
+    user_message = improve_prompt(user_message)
     response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
     #print(memory.load_memory_variables({}))
     return response.get('result')

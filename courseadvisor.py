@@ -41,8 +41,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from llm import count_tokens
 text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", " ", ""],
-    chunk_size=150,
-    chunk_overlap=0,
+    chunk_size=200,
+    chunk_overlap=50,
     length_function=count_tokens
 )
 
@@ -73,19 +73,27 @@ template = """
 
 You are an expert in Post-Secondary School Education schools and courses in Singapore.
 Your job is to list all the Post-Secondary Schools Education schools or courses in Singapore that \
-    fulfill the requirements stated in the question. 
-Post-Secondary Schools Education Schools are made up of the Junior Colleges (a.k.a JC), Millennia Institutes (a.k.a MI), \
-    Polytechnics (a.k.a Poly), and Institute of Technical Education (a.k.a ITE).
+    fulfill the requirements stated in the question.
+Note: \
+    Post-Secondary Schools Education is made up of the Junior Colleges (a.k.a JC), Millennia Institutes (a.k.a MI), \
+    Polytechnics (a.k.a Poly), and Institute of Technical Education (a.k.a ITE). \
+    Do NOT include Universities in your answer.
+    The words 'score' or 'points' in the user question is interchangable with 'Aggregate Score'. 
 If necessary, use the chat history, delimited by <chat_history>, to help you understand \
     the question better. 
-Also generate your answer based on the context provided, delimited by <context>. 
+Always generate your answer based on the context provided, delimited by <context>. 
+NEVER make up information. NEVER make up schools and courses that do not exist. 
+If you don't know the answer, just say that you don't know.
 
 Steps to follow to generate your response:
 1. If the question is not about Post-Secondary School Education in Singapore, \
-    remind the user what your job is and provide an example what he/she can ask.
-2. Analyse the question and look for all the schools / courses that fulfill the requirements in the question 
-4. The word 'score' in the question is likely to refer to 'Aggregate Score'.
-5. Use these steps to determine how good / likely will a student be accepted into a course / school \
+    explain why you are unable to provide any answers and provide an example what he/she can ask.
+2. Analyse the question and identify the schools or courses in the context \
+    that fit all the requirements in the question. \
+3. Extract key information, such as School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc. \
+    of these schools and courses from the context
+4. Do NOT make up any info if they do not exist in the context. 
+6. Use these steps to determine how good or likely will a student be accepted into a course or school \
     based on his/her aggregate score: \
         a. Identify the aggregate score range of the course / school.
         b. Let A be the smaller number in the aggregate score range, B be the bigger number.
@@ -93,15 +101,14 @@ Steps to follow to generate your response:
         d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
         e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
 
-If you don't know the answer, just say that you don't know, NEVER make up answers. \
-NEVER make up any information that do not exist. Leave the value blank if you do not know.
+Your answer should consist of a short abstract and \
+the list of schools / courses that fulfill the question.
+Generate the list of schools / courses in JSON format. \
+Each JSON object will contain the key information of the schools/courses.
+Omit JSON keys that are not applicable. Leave any unknown value blank.  
 
-Your answer will be a list of JSON objects of the schools/courses that fulfill the question \
-    each JSON object will contain key information of the schools/courses, such as: \
-    School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc.
-Omit JSON keys that are not applicable. 
-
-Examples: \
+Sample of the JSON output of a list of schools or courses delimited by <json_list>: 
+<json_list>
 [
 {{"School Name":"Anglo-Chinese Junior College",
 "Course Name":"Science",
@@ -112,11 +119,19 @@ Examples: \
 "School Name":"School of Business Management",
 "Course Name":"Diploma in Sport and Wellness Management",
 "Course Code":"C81",
-"Aggregate Score Range":"11-16/7-9",
-"Aggregate Score Type":"ELR2B2-B/ELMAB3"}},
+"Aggregate Score Range":"11-16",
+"Aggregate Score Type":"ELR2B2-B"}},
 ]
+</json_list>
 
-Output the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
+Wrap the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
+
+If the list of schools or courses in your answer contains Poly or ITE COURSES, \
+include this link (MOE Course Finder)"https://www.moe.gov.sg/coursefinder" at the end of your answer.
+If the list of schools or courses in your answer contains JC or MI SCHOOLS, \
+include this link (MOE School Finder)"https://www.moe.gov.sg/schoolfinder" at the end of your answer.
+Advise the user to use the link(s) to verify your answer. 
+
 Add a line break at the end of your answer. 
 
 <context>
@@ -194,10 +209,9 @@ qa_chain = RetrievalQA.from_chain_type(
 
 #~~~~ invoke function to call from streamlit form
 from logics import improve_message_courses
-import pandas as pd
-import json
-import re
+from utility import process_courses_response
 
+@st.cache_data
 def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
@@ -209,20 +223,8 @@ def courses_invoke_question(user_message):
     # find that reseting the vectordb_courses collection produces better responses. 
     print(response.get('result'))
 
-    df_list=None
-    # Use a regular expression to extract the JSON content within <json> tags
-    json_strings = re.findall(r'<json_list>.+</json_list>', response.get('result'), flags = re.DOTALL)
-
-    if len(json_strings)>0:
-       json_strings = re.sub(r'</?json_list>','', json_strings[0])
-
-    try:
-        json_objs = json.loads(json_strings)
-        df_list = pd.json_normalize(json_objs)
-    except:
-       pass
-
-    response_text = re.sub(r'<json_list>.*</json_list>', '', response.get('result'), flags = re.DOTALL)
+    #~~~~~~~~ split JSON from response text, convert it to df
+    response_text, df_list = process_courses_response(response.get('result'))
 
     vectordb_courses.reset_collection()
 

@@ -58,3 +58,6 @@ response_text = re.sub(r'<json_list>.+</json_list>', '', abc, flags = re.DOTALL)
 if df_list is not None:
     print(df_list.to_string())
 print(response_text)
+
+import streamlit as st
+st.dataframe(None)
