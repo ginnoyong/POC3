@@ -1,14 +1,14 @@
 import os
 import streamlit as st
 
-try:
+try: 
     #~~~ only when deploying
     __import__('pysqlite3')
     import sys
     sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
     #~~~ only when deploying
 except:
-    pass
+   pass
 
 from dotenv import load_dotenv
 if load_dotenv('.env'):
