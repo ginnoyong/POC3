@@ -101,9 +101,8 @@ Steps to follow to generate your response:
         d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
         e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
 
-Your answer should consist of a short abstract and \
-the list of schools / courses that fulfill the question.
-Generate the list of schools / courses in JSON format. \
+If your answer consists of a list of schools or courses that answers the user's question, \
+generate this list in JSON format. \
 Each JSON object will contain the key information of the schools/courses.
 Omit JSON keys that are not applicable. Leave any unknown value blank.  
 
