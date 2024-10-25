@@ -95,6 +95,9 @@ Steps to follow to generate your response:
         d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
         e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
 
+Think about what you do. Is your answer complete, accurate and correct?
+Do it again better if it is not. 
+
 If your answer consists of a list of schools or courses that answers the user's question, \
 generate this list in JSON format. \
 Each JSON object will contain the key information of the schools/courses.
@@ -131,8 +134,11 @@ Add a line break at the end of your answer.
 {context}
 </context>
 
+<chat_history>
+{chat_history}
+</chat_history>
 Question:{question}
-"""
+Answer:"""
 
 #~~~~~~~~ the prompt template
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)

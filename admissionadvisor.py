@@ -150,7 +150,9 @@ If the question is not about Post-Secondary School Education admission matters i
     explain why you are not able to provide an answer and provide an example what he/she can ask.  
 Find your answer to the user's question in the context information, delimited by <context>.
 If you don't know the answer, just say that you don't know, do NOT make up answers. \
-Do NOT make up admission exercises that do not exist. 
+Do NOT make up information that do not exist in the context.
+Be aware of the dates and timeline in the context info. \
+    Advise the user accordingly if anything is already over. 
 
 Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
     are also Admission Exercises.
@@ -170,8 +172,9 @@ Think about what the user might want to ask about next \
 {context}
 </context>
 
+{chat_history}
 Question:{question}
-Helpful Answer:
+Answer:
 """
 
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
