@@ -144,18 +144,17 @@ from langchain.prompts import PromptTemplate
 # Build prompt
 template = """
 You are an expert in Post-Secondary School Education admission matters in Singapore.
-Your job is to provide detailed information about Post-Secondary School Education admission exercises \
-that answers the user's question, delimited by <question>.
-If the question is not about Post-Secondary School Education admission matters in Singapore, \
-    explain why you are not able to provide an answer and provide an example what he/she can ask.  
-Find your answer to the user's question in the context information, delimited by <context>.
-If you don't know the answer, just say that you don't know, do NOT make up answers. \
-Do NOT make up information that do not exist in the context.
-Be aware of the dates and timeline in the context info. \
-    Advise the user accordingly if anything is already over. 
+Your job is to provide answer about Post-Secondary School Education admission exercises \
+to the user's question at the end.
 
-Note that Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
-    are also Admission Exercises.
+1. If the question is not about Post-Secondary School Education admission matters in Singapore, \
+    explain why you are not able to provide an answer and provide an example what he/she can ask.  
+2. Find your answer to the user's question in the context information, delimited by <context>.
+3. If you don't know the answer, just say that you don't know, do NOT make up answers. \
+4. Do NOT make up information that do not exist in the context.
+5. Pay attention to the dates and timelines of admission exercises in the context info. \
+    Craft your answer with these dates and timelines in perspective. \
+    Provide known dates available in the context where applicable. 
 
 Keep the answer as concise as possible.
 
@@ -169,6 +168,12 @@ Think about what the user might want to ask about next \
     and suggest with 'Would you also like to find out...' after that.
 
 <context>
+Different admission exercises are meant specifically for different types of students. 
+There are 2 main types of Secondary School students in Singapore: \
+O-Level and N-Level. N-Level is made up of N(A), stands for Normal Academic, \
+    and N(T), stands for N(T).
+Direct-Entry-Scheme to Polytechnic Programme (DPP) and Polytechnic Foundation Programme (PFP) \
+are also Admission Exercises.
 {context}
 </context>
 
@@ -186,7 +191,8 @@ QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
 #~~~~~~~ Retriever code
 
-retriever=vectordb.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type="mmr")
+#retriever=vectordb.as_retriever(search_kwargs={"k":10, "fetch_k":50}, search_type="mmr")
+retriever=vectordb.as_retriever(search_kwargs={"k":25})
 
 #~~~~~~ if using MultiQueryRetriever
 #from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -198,26 +204,36 @@ retriever=vectordb.as_retriever(search_kwargs={"k":5, "fetch_k":25}, search_type
 from utility import convert_messages_to_llm_format
 from llm import get_completion_by_messages
 def improve_prompt(user_prompt):
-    sys_prompt = """Your task is to improve a user question and turn it into a concise, single-sentence prompt \
-        that will be fed into LangChain's RetrievalQA. 
-        Your improved question should improve the retrieval outcome and \
-            ultimately improve the quality of the final response from the LLM. Respond with only the prompt."""
+    sys_prompt = """Your task is to improve a user question that will be fed into LangChain's MultiQueryRetriever. 
+    1. Identify key terms in the user question, such as the student's certification, the admission exercise, etc . 
+    2. Improve the user question so that MultiQueryRetriever retrieves the documents that are relevant to these key terms.
+    3. Make your improved question more concise.
+    4. Respond with only the prompt."""
     #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
     messages = [{"role": "system", "content": sys_prompt},]
     #~~ inject chat history to improve the prompt
     formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
     messages.extend(formatted_messages)
     messages.extend([{"role": "user", "content": user_prompt}])
-    print(messages)
+    #print(messages)
     return get_completion_by_messages(messages = messages)
 
+#~~~~~~~~ MultiQueryRetriever
+from langchain.retrievers.multi_query import MultiQueryRetriever
+
+# We will be reusing the `vectordb` from the Naive RAG
+# You can imagine `MultiQueryRetriever` as a chain that generates multiple queries
+# itself is not a complete RAG chain, but it can be used as a retriever in a RAG chain
+retriever_multiquery = MultiQueryRetriever.from_llm(
+  retriever=retriever, llm=llm, 
+)
 
 #~~~~~~~~ RetrievalQA code
 from langchain.chains import RetrievalQA
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
-    retriever=retriever,
+    retriever=retriever_multiquery,
     return_source_documents=True, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
                        "verbose":True,
@@ -257,10 +273,11 @@ qa_chain = RetrievalQA.from_chain_type(
 #~~~~~~~~ Include today's date in prompt for responses regarding admission matters to be date senstitive. 
 from datetime import datetime
 
-@st.cache_data
+@st.cache_data(max_entries=1)
 def admissions_invoke_question(user_message):
     today_date=datetime.today().strftime('%d/%m/%Y')
     user_message = improve_prompt(user_message)
+    print(user_message)
     response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
     #print(memory.load_memory_variables({}))
     return response.get('result')

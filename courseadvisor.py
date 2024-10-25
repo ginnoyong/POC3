@@ -123,9 +123,9 @@ Sample of the JSON output of a list of schools or courses delimited by <json_lis
 Wrap the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
 
 If the list of schools or courses in your answer contains Poly or ITE COURSES, \
-include this link (MOE Course Finder)"https://www.moe.gov.sg/coursefinder" at the end of your answer.
+include this link (MOE Course Finder)https://www.moe.gov.sg/coursefinder at the end of your answer.
 If the list of schools or courses in your answer contains JC or MI SCHOOLS, \
-include this link (MOE School Finder)"https://www.moe.gov.sg/schoolfinder" at the end of your answer.
+include this link (MOE School Finder)https://www.moe.gov.sg/schoolfinder at the end of your answer.
 Advise the user to use the link(s) to verify your answer. 
 
 Add a line break at the end of your answer. 
@@ -210,7 +210,7 @@ qa_chain = RetrievalQA.from_chain_type(
 from logics import improve_message_courses
 from utility import process_courses_response
 
-@st.cache_data
+@st.cache_data(max_entries=1)
 def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
@@ -257,4 +257,3 @@ def get_chat_history():
 #print(response.get('result'))
 
 #print(memory)
-

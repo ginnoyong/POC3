@@ -30,6 +30,7 @@ st.set_page_config(
 
 st.title("🎓 Post-Secondary School Education AI Chatbot")
 st.subheader(f"Ask questions about {st.session_state.prompt_category}")
+st.write("Click to change")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -61,7 +62,7 @@ def get_chat_history():
             st.session_state.chat_history = gch_c()
 
 df_list = None
-user_prompt = form.text_area("What would you like to know about?", height=200)
+user_prompt = form.text_area(f"What would you like to find out about {st.session_state.prompt_category}?", height=200)
 if form.form_submit_button("Submit"):
     st.toast(f"User Input Submitted - {user_prompt}")
     #response = llm.get_completion(user_prompt) # <--- This calls the helper function that we have created 🆕
@@ -92,9 +93,9 @@ if form.form_submit_button("Submit"):
 
 c1 = st.container()
 with c1:
-    with st.expander(f"Chat Summary on {st.session_state.prompt_category}"):
+    with st.expander(f"Conversation Summary on {st.session_state.prompt_category}"):
         st.write(f'''
             {st.session_state.chat_history}
         ''')
         #st.dataframe(st.session_state.chat_history)
-        st.button("Clear Chat", on_click=clear_chat_history)
+        st.button("Reset Conversation", on_click=clear_chat_history)
