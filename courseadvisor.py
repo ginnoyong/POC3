@@ -87,14 +87,18 @@ Better exam results gives a lower aggregate score. \
 Follow these steps to generate your answer:
 1. If the question is not about Poly and ITE courses in Singapore, \
     explain why you are unable to provide any answers and provide an example what he/she can ask.
-2. Find courses that contains one or more of the core terms or similar in the context.
+2. Find courses that contains one or more of the core terms or similar terms in the context.
 3. Extract key information of these courses, such as \
     School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc. \
 
-If your answer consists of a list of courses that answers the user question, \
-generate the list in JSON format at the beginning of your answer. \
+If your answer contains a list of courses that answers the user question, \
+generate the list in JSON format at the TOP of your answer. \
+Then followed by your summary of the results in response to the user question in your answer.
+Then provide the link to MOE Course Finder: https://www.moe.gov.sg/coursefinder \
+and advise the user to verify the info. 
+
 Each JSON object will contain the key information of the schools/courses.
-Omit JSON keys that are not applicable. Leave any unknown value blank.  
+Omit JSON keys that are not applicable. Leave any unknown value blank.
 
 Sample of the JSON output of a list of courses delimited by <json_list>: 
 <json_list>
@@ -109,9 +113,6 @@ Sample of the JSON output of a list of courses delimited by <json_list>:
 </json_list>
 
 Wrap the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
-
-Include this link (MOE Course Finder) https://www.moe.gov.sg/coursefinder at the end of your answer.
-Advise the user to use the link(s) to verify your answer. 
 
 Add a line break at the end of your answer. 
 
@@ -205,12 +206,17 @@ def courses_invoke_question(user_message):
     print(user_message)
     response = qa_chain.invoke(user_message)
     print(f"collection count:{vectordb_courses._collection.count()}")
-    # find that reseting the vectordb_courses collection produces better responses. 
     print(response.get('result'))
-
-    #~~~~~~~~ split JSON from response text, convert it to df
-    response_text, df_list = process_courses_response(response.get('result'))
-
+    if vectordb_courses._collection.count()==0:
+        df_list = None
+        link = '<a href="https://www.moe.gov.sg/coursefinder">MOE Course Finder</a>'
+        response_text = """I am unable to retrieve any information that answers your question at this moment. \n\
+            Please try again later or search for specific courses at {link}."""
+    else:
+        #~~~~~~~~ split JSON from response text, convert it to df
+        response_text, df_list = process_courses_response(response.get('result'))
+        
+    # reseting the vectordb_courses collection produces better responses. 
     vectordb_courses.reset_collection()
 
     #return response.get('result')
