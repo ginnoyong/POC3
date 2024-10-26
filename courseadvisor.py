@@ -67,7 +67,8 @@ from langchain.prompts import PromptTemplate
 
 # Build prompt
 template = """
-Your job is to answer the user question about Polytechnic (Poly) and Institute of Technical Education (ITE) courses in Singapore at the end of this prompt.
+Your job is to answer the user question about Polytechnic (Poly) and Institute of Technical Education (ITE) courses in Singapore \
+    that is presented at the end of this prompt.
 
 Use the context, delimited by <context> to generate your answer. \
 If you don't know the answer, just say that you don't know.
@@ -87,19 +88,14 @@ Better exam results gives a lower aggregate score. \
 Follow these steps to generate your answer:
 1. If the question is not about Poly and ITE courses in Singapore, \
     explain why you are unable to provide any answers and provide an example what he/she can ask.
-2. Find courses that contains one or more of the core terms or similar terms in the context.
+2. Find courses and similar courses in the context that contains one or more of the core terms or similar in the user question.
 3. Extract key information of these courses, such as \
     School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc. \
 
 If your answer contains a list of courses that answers the user question, \
-generate the list in JSON format at the TOP of your answer. \
-Then followed by your summary of the results in response to the user question in your answer.
-Then provide the link to MOE Course Finder: https://www.moe.gov.sg/coursefinder \
-and advise the user to verify the info. 
-
+generate the list in JSON format at the TOP of your answer. 
 Each JSON object will contain the key information of the schools/courses.
 Omit JSON keys that are not applicable. Leave any unknown value blank.
-
 Sample of the JSON output of a list of courses delimited by <json_list>: 
 <json_list>
 [
@@ -111,8 +107,11 @@ Sample of the JSON output of a list of courses delimited by <json_list>:
 "Aggregate Score Type":"ELR2B2-B"}},
 ]
 </json_list>
-
 Wrap the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
+
+Then followed by a concise text summary or comment in response to the user question in your answer.
+At the end provide the link to MOE Course Finder: https://www.moe.gov.sg/coursefinder \
+and advise the user to verify the info or search for more courses. 
 
 Add a line break at the end of your answer. 
 
@@ -145,7 +144,8 @@ from llm import get_completion_by_messages
 def improve_prompt(user_prompt):
     sys_prompt = """Your task is to improve a user question that will be fed into LangChain's MultiQueryRetriever. 
     Your improved prompt should make the MultiQueryRetriever retrieve \
-    more courses that aligns with the user question and other similar courses. 
+        more courses that are related or similar to the core terms in the user question, \
+            ultimately producing better results and improve the quality of the LLM's answer. 
     Respond with only the prompt."""
     #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
     messages = [{"role": "system", "content": sys_prompt},]
@@ -170,7 +170,7 @@ retriever_multiquery = MultiQueryRetriever.from_llm(
 from langchain_cohere import CohereRerank
 from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
 
-compressor = CohereRerank(top_n=50, model='rerank-english-v3.0')
+compressor = CohereRerank(top_n=12, model='rerank-english-v3.0')
 
 compression_retriever = ContextualCompressionRetriever(
     base_compressor=compressor,
@@ -192,6 +192,46 @@ qa_chain = RetrievalQA.from_chain_type(
                        },
 )
 
+#~~~~ determine if another web retrieval is required
+def determine_retrieval(user_prompt):
+    sys_prompt = """Your task is to determine if the user question can be answered just by the information in the chat history.
+        Respond with 'Y' if the user question CANNOT be answered by the information in the chat history alone. 
+        Respond with 'N' if the user question CAN be answered by the information in the chat history alone.
+        Respond with 'Y' if this is the first human input in the chat history.
+    Respond with only a single letter 'Y' or 'N'."""
+    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
+    messages = [{"role": "system", "content": sys_prompt},]
+    #~~ inject chat history to improve the prompt
+    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    messages.extend(formatted_messages)
+    messages.extend([{"role": "user", "content": user_prompt}])
+    #print(messages)
+    response = get_completion_by_messages(messages = messages)
+    print(response)
+    return response
+
+#~~~~ determine if another web retrieval is required
+def respond_conversation(user_prompt):
+    sys_prompt = """Your task is to answer the user question about Polytechnic and ITE education in Singapore based on the chat history. 
+        Note:\
+            The words 'score' or 'points' in the user question refers to 'Aggregate Score'. 
+            The aggregate score range of a course indicate the scores of the students who were \
+                accepted into the course in the previous admission exercise.
+            Better exam results gives a lower aggregate score. \
+                a. Identify the aggregate score range of the course.
+                b. Let A be the smaller number in the aggregate score range, B be the bigger number.
+                c. If a student's aggregate score is less than A, he/she has very good chance / is very likely to be accepted into the course. 
+                d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
+                e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
+        """
+    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
+    messages = [{"role": "system", "content": sys_prompt},]
+    #~~ inject chat history to improve the prompt
+    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    messages.extend(formatted_messages)
+    messages.extend([{"role": "user", "content": user_prompt}])
+    #print(messages)
+    return get_completion_by_messages(messages = messages)
 
 #~~~~ invoke function to call from streamlit form
 from logics import improve_message_courses
@@ -202,22 +242,27 @@ def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
     #vectordb_courses.from_texts(splitted_text)
-    user_message = improve_prompt(user_message)
-    print(user_message)
-    response = qa_chain.invoke(user_message)
-    print(f"collection count:{vectordb_courses._collection.count()}")
-    print(response.get('result'))
-    if vectordb_courses._collection.count()==0:
-        df_list = None
-        link = '<a href="https://www.moe.gov.sg/coursefinder">MOE Course Finder</a>'
-        response_text = """I am unable to retrieve any information that answers your question at this moment. \n\
-            Please try again later or search for specific courses at {link}."""
+
+    #~~~ determine if web search and RAG retrieval is required for this user question
+    df_list = None
+    if determine_retrieval(user_message)=='N':
+        response_text = respond_conversation(user_message)
     else:
-        #~~~~~~~~ split JSON from response text, convert it to df
-        response_text, df_list = process_courses_response(response.get('result'))
-        
-    # reseting the vectordb_courses collection produces better responses. 
-    vectordb_courses.reset_collection()
+        user_message = improve_prompt(user_message)
+        print(user_message)
+        response = qa_chain.invoke(user_message)
+        print(f"collection count:{vectordb_courses._collection.count()}")
+        print(response.get('result'))
+        if vectordb_courses._collection.count()==0:
+            df_list = None
+            response_text = f"""I am unable to retrieve any information that answers your question at this moment. \n\
+                Please try again later or search for specific courses at MOE Course Finder https://www.moe.gov.sg/coursefinder."""
+        else:
+            #~~~~~~~~ split JSON from response text, convert it to df
+            response_text, df_list = process_courses_response(response.get('result'))
+            
+        # reseting the vectordb_courses collection produces better responses. 
+        vectordb_courses.reset_collection()
 
     #return response.get('result')
     return response_text, df_list
