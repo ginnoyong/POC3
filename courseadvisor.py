@@ -41,8 +41,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from llm import count_tokens
 text_splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", " ", ""],
-    chunk_size=200,
-    chunk_overlap=50,
+    chunk_size=500,
+    chunk_overlap=0,
     length_function=count_tokens
 )
 
@@ -67,50 +67,38 @@ from langchain.prompts import PromptTemplate
 
 # Build prompt
 template = """
-You are an expert in Post-Secondary School Education schools and courses in Singapore.
-Your job is to list all the Post-Secondary Schools Education schools or courses in Singapore that \
-    fulfill the requirements stated in the question.
-Note: \
-    Post-Secondary Schools Education is made up of the Junior Colleges (a.k.a JC), Millennia Institutes (a.k.a MI), \
-    Polytechnics (a.k.a Poly), and Institute of Technical Education (a.k.a ITE). \
-    Do NOT include Universities in your answer.
-    The words 'score' or 'points' in the user question is interchangable with 'Aggregate Score'. 
-Always generate your answer based on the context provided, delimited by <context>. 
-NEVER make up information. NEVER make up schools and courses that do not exist. 
+Your job is to answer the user question about Polytechnic (Poly) and Institute of Technical Education (ITE) courses in Singapore at the end of this prompt.
+
+Use the context, delimited by <context> to generate your answer. \
 If you don't know the answer, just say that you don't know.
+Do NOT make up information. Do NOT make up schools and courses that do not exist. 
 
-Steps to follow to generate your response:
-1. If the question is not about Post-Secondary School Education in Singapore, \
+Note:\
+The words 'score' or 'points' in the user question refers to 'Aggregate Score'. 
+The aggregate score range of a course indicate the scores of the students who were \
+    accepted into the course in the previous admission exercise.
+Better exam results gives a lower aggregate score. \
+    a. Identify the aggregate score range of the course.
+    b. Let A be the smaller number in the aggregate score range, B be the bigger number.
+    c. If a student's aggregate score is less than A, he/she has very good chance / is very likely to be accepted into the course. 
+    d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
+    e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
+
+Follow these steps to generate your answer:
+1. If the question is not about Poly and ITE courses in Singapore, \
     explain why you are unable to provide any answers and provide an example what he/she can ask.
-2. Analyse the question and identify the schools or courses in the context \
-    that fit all the requirements in the question. \
-3. Extract key information, such as School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc. \
-    of these schools and courses from the context
-4. Do NOT make up any info if they do not exist in the context. 
-6. Use these steps to determine how good or likely will a student be accepted into a course or school \
-    based on his/her aggregate score: \
-        a. Identify the aggregate score range of the course / school.
-        b. Let A be the smaller number in the aggregate score range, B be the bigger number.
-        c. If a student's aggregate score is less than A, he/she has very good chance / is very likely to be accepted into the course. 
-        d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
-        e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
+2. Find courses that contains one or more of the core terms or similar in the context.
+3. Extract key information of these courses, such as \
+    School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc. \
 
-Think about what you do. Is your answer complete, accurate and correct?
-Do it again better if it is not. 
-
-If your answer consists of a list of schools or courses that answers the user's question, \
-generate this list in JSON format. \
+If your answer consists of a list of courses that answers the user question, \
+generate the list in JSON format at the beginning of your answer. \
 Each JSON object will contain the key information of the schools/courses.
 Omit JSON keys that are not applicable. Leave any unknown value blank.  
 
-Sample of the JSON output of a list of schools or courses delimited by <json_list>: 
+Sample of the JSON output of a list of courses delimited by <json_list>: 
 <json_list>
 [
-{{"School Name":"Anglo-Chinese Junior College",
-"Course Name":"Science",
-"Course Code":"NA",
-"Aggregate Score Range":"3-7",
-"Aggregate Score Type":"L1R5"}},
 {{"Institute Name":"Nanyang Polytechnic",
 "School Name":"School of Business Management",
 "Course Name":"Diploma in Sport and Wellness Management",
@@ -122,10 +110,7 @@ Sample of the JSON output of a list of schools or courses delimited by <json_lis
 
 Wrap the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
 
-If the list of schools or courses in your answer contains Poly or ITE COURSES, \
-include this link (MOE Course Finder)https://www.moe.gov.sg/coursefinder at the end of your answer.
-If the list of schools or courses in your answer contains JC or MI SCHOOLS, \
-include this link (MOE School Finder)https://www.moe.gov.sg/schoolfinder at the end of your answer.
+Include this link (MOE Course Finder) https://www.moe.gov.sg/coursefinder at the end of your answer.
 Advise the user to use the link(s) to verify your answer. 
 
 Add a line break at the end of your answer. 
@@ -158,8 +143,8 @@ from llm import get_completion_by_messages
 
 def improve_prompt(user_prompt):
     sys_prompt = """Your task is to improve a user question that will be fed into LangChain's MultiQueryRetriever. 
-    Your improved prompt should be more concise and make the MultiQueryRetriever retrieve \
-    more schools and courses that is relevant to the user question. 
+    Your improved prompt should make the MultiQueryRetriever retrieve \
+    more courses that aligns with the user question and other similar courses. 
     Respond with only the prompt."""
     #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
     messages = [{"role": "system", "content": sys_prompt},]
@@ -167,7 +152,7 @@ def improve_prompt(user_prompt):
     formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
     messages.extend(formatted_messages)
     messages.extend([{"role": "user", "content": user_prompt}])
-    print(messages)
+    #print(messages)
     return get_completion_by_messages(messages = messages)
 
 #~~~~~~~~ MultiQueryRetriever
@@ -184,7 +169,7 @@ retriever_multiquery = MultiQueryRetriever.from_llm(
 from langchain_cohere import CohereRerank
 from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
 
-compressor = CohereRerank(top_n=10, model='rerank-english-v3.0')
+compressor = CohereRerank(top_n=50, model='rerank-english-v3.0')
 
 compression_retriever = ContextualCompressionRetriever(
     base_compressor=compressor,
@@ -196,12 +181,13 @@ from langchain.chains import RetrievalQA
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
-    retriever=compression_retriever,
+    retriever=retriever_multiquery,
+    #retriever=compression_retriever,
     #retriever=websearch_retriever,
     return_source_documents=False, # Make inspection of document possible
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT, 
                        "memory":memory,
-                       "verbose":True,
+                       "verbose":False,
                        },
 )
 
@@ -218,7 +204,7 @@ def courses_invoke_question(user_message):
     user_message = improve_prompt(user_message)
     print(user_message)
     response = qa_chain.invoke(user_message)
-    print(vectordb_courses._collection.count())
+    print(f"collection count:{vectordb_courses._collection.count()}")
     # find that reseting the vectordb_courses collection produces better responses. 
     print(response.get('result'))
 
@@ -243,8 +229,8 @@ def get_chat_history():
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
 #print(response.get('result'))
 #~~~~~~~~ Invoke and Response
-#user_prompt = "all cybersecurity courses in poly"
-#user_prompt = improve_prompt("business courses")
+#user_prompt = "my interests are in food and beverage"
+#user_prompt = improve_prompt(user_prompt)
 #print(user_prompt)
 #response = courses_invoke_question(user_prompt)
 #formatted_chat_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
