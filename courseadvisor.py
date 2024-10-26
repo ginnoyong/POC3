@@ -217,12 +217,12 @@ def respond_conversation(user_prompt):
             The words 'score' or 'points' in the user question refers to 'Aggregate Score'. 
             The aggregate score range of a course indicate the scores of the students who were \
                 accepted into the course in the previous admission exercise.
-            Better exam results gives a lower aggregate score. \
+            A student with better academic results gets a lower aggregate score. \
                 a. Identify the aggregate score range of the course.
                 b. Let A be the smaller number in the aggregate score range, B be the bigger number.
-                c. If a student's aggregate score is less than A, he/she has very good chance / is very likely to be accepted into the course. 
-                d. If a student's aggregate score is between A and B, he/she has fair chance / is likely to be accepted into the course.
-                e. If a student's aggregate score is more than B, he/she has poor chance / is unlikely to be accepted into the course.
+                c. If a student's aggregate score is LESS than A, he/she has very good chance to be accepted into the course. 
+                d. If a student's aggregate score is BETWEEEN A and B, he/she has fair chance to be accepted into the course.
+                e. If a student's aggregate score is MORE than B, he/she has poor chance to be accepted into the course.
         """
     #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
     messages = [{"role": "system", "content": sys_prompt},]
