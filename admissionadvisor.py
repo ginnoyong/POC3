@@ -273,7 +273,7 @@ qa_chain = RetrievalQA.from_chain_type(
 #~~~~~~~~ Include today's date in prompt for responses regarding admission matters to be date senstitive. 
 from datetime import datetime
 
-@st.cache_data(max_entries=1)
+@st.cache_data(ttl=300)
 def admissions_invoke_question(user_message):
     today_date=datetime.today().strftime('%d/%m/%Y')
     user_message = improve_prompt(user_message)

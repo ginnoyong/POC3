@@ -237,7 +237,7 @@ def respond_conversation(user_prompt):
 from logics import improve_message_courses
 from utility import process_courses_response
 
-@st.cache_data(max_entries=1)
+@st.cache_data(ttl=300)
 def courses_invoke_question(user_message):
     #result=search.run(user_message)
     #splitted_text = text_splitter(result)
