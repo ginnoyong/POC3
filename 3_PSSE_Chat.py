@@ -31,7 +31,7 @@ st.title("🎓 Post-Secondary School Education AI Chatbot")
 c1 = st.container(border=True)
 with c1:
     st.subheader(f"Ask questions about {st.session_state.prompt_category}")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.button("Admission Exercises", on_click=select_admissions)
     with col2:
