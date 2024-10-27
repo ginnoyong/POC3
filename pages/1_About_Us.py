@@ -22,6 +22,7 @@ with c3:
     st.write("""This chatbot was designed to address these challenges. By providing accurate and timely information, \
             it aims to help prospects navigate the admission process more smoothly and efficiently. \
             It also helps to reduces the amount of preparation required, ultimately saving time for both admission and academic staff involved in advising duties.""")
+    st.write("""In addition, it could also be used on ad-hoc basis by both students and staff for education and career guidance and progression planning.""")
 
 c1 = st.container(border=True)
 with c1:
