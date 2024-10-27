@@ -8,7 +8,7 @@ st.set_page_config(
 # endregion <--------- Streamlit App Configuration --------->
 
 st.title("About Us")
-st.subheader("subheader")
+st.subheader("The Post-Secondary School Education AI Chatbot")
 st.write("""As an academic staff member at a polytechnic in Singapore, I understand that our responsibilities extend beyond teaching. \
          One of the more challenging tasks is providing guidance during major admission exercises. The admission process can be complex, \
          and academic staff can be less than being conversant in its knowledge as it is not part of our core function.""") 

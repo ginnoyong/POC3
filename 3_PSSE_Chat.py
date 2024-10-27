@@ -98,5 +98,16 @@ with c3:
         ''')
         #st.dataframe(st.session_state.chat_history)
 
+c4 = st.container(border=True)
+with c3:
+    with st.expander(f"IMPORTANT NOTICE"):
+        st.write(f'''
+            This web application is a prototype developed for educational purposes only. \
+                The information provided here is NOT intended for real-world usage and should not be relied upon for making any decisions, \
+                especially those related to financial, legal, or healthcare matters.''')
+        st.write(f'''Furthermore, please be aware that the LLM may generate inaccurate or incorrect information. \
+                 You assume full responsibility for how you use any generated output. \
+                 Always consult with qualified professionals for accurate and personalized advice.''')
+
 #~~~ button to clear chat history
 st.sidebar.button("Start Over Conversation", on_click=clear_chat_history)
