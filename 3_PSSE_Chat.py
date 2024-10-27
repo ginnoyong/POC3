@@ -61,7 +61,7 @@ def get_chat_history():
 df_list = None
 
 form = st.form(key="form")
-user_prompt = form.text_area(f"What would you like to find out about {st.session_state.prompt_category}?", height=200)
+user_prompt = form.text_area(f"What questions do you have about {st.session_state.prompt_category}?", height=200)
 if form.form_submit_button("Submit"):
     st.toast(f"User Input Submitted - {user_prompt}")
     #response = llm.get_completion(user_prompt) # <--- This calls the helper function that we have created 🆕
