@@ -100,7 +100,7 @@ with c3:
 
 c4 = st.container(border=True)
 with c4:
-    with st.expander(f"IMPORTANT NOTICE"):
+    with st.expander(f"""IMPORTANT NOTICE"""):
         st.write(f'''
             This web application is a prototype developed for educational purposes only. \
                 The information provided here is NOT intended for real-world usage and should not be relied upon for making any decisions, \

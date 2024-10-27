@@ -50,6 +50,7 @@ with c3:
              This search engine has been specifically configured to search only within the following sites: \
              www.moe.gov.sg/coursefinder/coursedetail?course=* and www.moe.gov.sg/coursefinder/*. """)
     st.write("""Additionally, the MultiQueryRetriever is also utilized here to refine user prompts before passing them to the WebResearchRetriever.""")
-    st.write("""The CrewAI WebsiteSearchTool was also tested but yielded unsatisfactory results. \
+    st.write("""The CrewAI WebsiteSearchTool was also tested but yielded unsatisfactory results.  \
              Its limited configuration options and lack of visibility into the underlying processes made it challenging to optimize.""")
+    
     st.image("methodology\\PSSE-Methodology-courseadvisor.webp")

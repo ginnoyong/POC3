@@ -112,5 +112,6 @@ with c5:
         **4. Downloadable Course Details**
         - Course details provided in the chatbot's responses are converted into a downloadable data frame.
         - This feature allows users to easily compile and compare course information from multiple chatbot interactions for quick reference.
+             
     """)
     
