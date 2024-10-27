@@ -23,7 +23,7 @@ def select_courses():
 # region <--------- Streamlit App Configuration --------->
 st.set_page_config(
     layout="centered",
-    page_title="PSSE_Chat"
+    page_title="PSSE AI Chatbot"
 )
 # endregion <--------- Streamlit App Configuration --------->
 
@@ -99,7 +99,7 @@ with c3:
         #st.dataframe(st.session_state.chat_history)
 
 c4 = st.container(border=True)
-with c3:
+with c4:
     with st.expander(f"IMPORTANT NOTICE"):
         st.write(f'''
             This web application is a prototype developed for educational purposes only. \

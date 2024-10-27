@@ -1,4 +1,10 @@
 import streamlit as st
+# region <--------- Streamlit App Configuration --------->
+st.set_page_config(
+    layout="centered",
+    page_title="PSSE AI Chatbot - Methodology"
+)
+# endregion <--------- Streamlit App Configuration --------->
 st.title("Methodology")
 
 c1=st.container(border=True)
@@ -11,7 +17,7 @@ with c1:
     st.write("""Additionally, there is a Start Over Conversation button to reset the conversation. \
             If you notice that responses are not as expected, clearing the chat history can help improve performance.
             """)
-    st.image("methodology\PSSE-Methodology-PSSE_Chat.webp")
+    st.image("methodology\\PSSE-Methodology-PSSE_Chat.webp")
 
 c2=st.container(border=True)
 with c2:
@@ -29,7 +35,7 @@ with c2:
              the Vector Store's retriever. This approach is found to produce better responses compared to using \
              MMR search type or a combination of both methods.""")
 
-    st.image("methodology\PSSE-Methodology-admissionadvisor.webp")
+    st.image("methodology\\PSSE-Methodology-admissionadvisor.webp")
 
 c3=st.container(border=True)
 with c3:
@@ -46,4 +52,4 @@ with c3:
     st.write("""Additionally, the MultiQueryRetriever is also utilized here to refine user prompts before passing them to the WebResearchRetriever.""")
     st.write("""The CrewAI WebsiteSearchTool was also tested but yielded unsatisfactory results. \
              Its limited configuration options and lack of visibility into the underlying processes made it challenging to optimize.""")
-    st.image("methodology\PSSE-Methodology-courseadvisor.webp")
+    st.image("methodology\\PSSE-Methodology-courseadvisor.webp")
