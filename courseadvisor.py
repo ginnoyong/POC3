@@ -235,29 +235,6 @@ def respond_conversation(user_prompt):
     return get_completion_by_messages(messages = messages)
 
 
-#~~~~~~~~ check if user question is about Post-Secondary School Courses. 
-def check_question(user_prompt):
-    sys_prompt = """Your task is to determine if the user question is about Post-Secondary School Courses \
-        in Polytechnics and ITE in Singapore. 
-    Determine this in the context of the chat history that is provided.
-    If you determine that the user question \
-        is about Post-Secondary School Admission Matters Courses \
-        in Polytechnics and ITE in Singapore, respond with 'Y' ONLY.
-    If you determine that the the user question \
-        is NOT about Courses in Polytechnics and ITE in Singapore, \
-        inform the user that this AI chatbot's role is to answer questions about Courses in Polytechnics and ITE in Singapore \
-        and provide suggestion questions, such as 'What are the accountancy courses in Polytechnics?', etc.
-    """
-    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
-    messages = [{"role": "system", "content": sys_prompt},]
-    #~~ inject chat history to improve the prompt
-    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
-    messages.extend(formatted_messages)
-    messages.extend([{"role": "user", "content": user_prompt}])
-    #print(messages)
-    return get_completion_by_messages(messages = messages)
-
-
 #~~~~ invoke function to call from streamlit form
 from logics import improve_message_courses
 from utility import process_courses_response
@@ -270,28 +247,24 @@ def courses_invoke_question(user_message):
 
     #~~~ determine if web search and RAG retrieval is required for this user question
     df_list = None
-    response_check_valid = check_question(user_message)
-    if response_check_valid=='Y':
-        if determine_retrieval(user_message)=='N':
-            response_text = respond_conversation(user_message)
-        else:
-            user_message = improve_prompt(user_message)
-            print(user_message)
-            response = qa_chain.invoke(user_message)
-            print(f"collection count:{vectordb_courses._collection.count()}")
-            print(response.get('result'))
-            if vectordb_courses._collection.count()==0:
-                df_list = None
-                response_text = f"""I am unable to retrieve any information that answers your question at this moment. \n\
-                    Please try again later or search for specific courses at MOE Course Finder https://www.moe.gov.sg/coursefinder."""
-            else:
-                #~~~~~~~~ split JSON from response text, convert it to df
-                response_text, df_list = process_courses_response(response.get('result'))
-                
-            # reseting the vectordb_courses collection produces better responses. 
-            vectordb_courses.reset_collection()
+    if determine_retrieval(user_message)=='N':
+        response_text = respond_conversation(user_message)
     else:
-        response_text = response_check_valid
+        user_message = improve_prompt(user_message)
+        print(user_message)
+        response = qa_chain.invoke(user_message)
+        print(f"collection count:{vectordb_courses._collection.count()}")
+        print(response.get('result'))
+        if vectordb_courses._collection.count()==0:
+            df_list = None
+            response_text = f"""I am unable to retrieve any information that answers your question at this moment. \n\
+                Please try again later or search for specific courses at MOE Course Finder https://www.moe.gov.sg/coursefinder."""
+        else:
+            #~~~~~~~~ split JSON from response text, convert it to df
+            response_text, df_list = process_courses_response(response.get('result'))
+                
+        # reseting the vectordb_courses collection produces better responses. 
+        vectordb_courses.reset_collection()
 
     #return response.get('result')
     return response_text, df_list
