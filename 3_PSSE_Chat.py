@@ -12,10 +12,10 @@ if not check_password():
     st.stop()
 
 if "prompt_category" not in st.session_state:
-    st.session_state.prompt_category = "Admissions"
+    st.session_state.prompt_category = "Admission Exercises"
 
 def select_admissions():
-    st.session_state.prompt_category = "Admissions"
+    st.session_state.prompt_category = "Admission Exercises"
 
 def select_courses():
     st.session_state.prompt_category = "POLITE Courses"
@@ -33,7 +33,7 @@ with c1:
     st.subheader(f"Ask questions about {st.session_state.prompt_category}")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.button("Admissions", on_click=select_admissions)
+        st.button("Admission Exercises", on_click=select_admissions)
     with col2:
         st.button("POLITE Courses", on_click=select_courses)
 
@@ -43,7 +43,7 @@ if "chat_history" not in st.session_state:
 #~~~ callback function to clear chat history
 def clear_chat_history():
     match st.session_state.prompt_category:
-        case "Admissions":
+        case "Admission Exercises":
             cm_a()
             st.session_state.chat_history = None
         case "POLITE Courses":
@@ -53,7 +53,7 @@ def clear_chat_history():
 #~~~ callback function to update chat history after every submit
 def get_chat_history():
     match st.session_state.prompt_category:
-        case "Admissions":
+        case "Admission Exercises":
             st.session_state.chat_history = gch_a()
         case "POLITE Courses":
             st.session_state.chat_history = gch_c()
@@ -70,7 +70,7 @@ if form.form_submit_button("Submit"):
     #response = courses_invoke_question(user_prompt)
     if check_malicious(user_prompt) == 'N':
         match st.session_state.prompt_category:
-            case "Admissions":
+            case "Admission Exercises":
                 response = admissions_invoke_question(user_prompt)
             case "POLITE Courses":
                 response, df_list = courses_invoke_question(user_prompt)
