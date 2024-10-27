@@ -269,18 +269,43 @@ qa_chain = RetrievalQA.from_chain_type(
 #for i in range(len(response.get('source_documents'))):
 #    print(f"""\n\n###{i}:\n{response.get('source_documents')[i].metadata.get('description')}\n{response.get('source_documents')[i].metadata.get('source')}\n""")
 
+#~~~~~~~~ check if user question is about Post-Secondary School Admission. 
+def check_question(user_prompt):
+    sys_prompt = """Your task is to determine if the user question is about Post-Secondary School Admission Matters in Singapore. 
+    Determine this in the context of the chat history that is provided.
+    If you determine that the user question \
+        is about Post-Secondary School Admission Matters in Singapore, respond with 'Y' ONLY.
+    If you determine that the the user question \
+        is NOT about Post-Secondary School Admission Matters in Singapore, \
+        inform the user that this AI chatbot's role is to answer questions about Post-Secondary School Admission Matters in Singapore \
+        and provide suggestion questions, such as 'What are the admission exercises that N-level students are eligible for?', etc.
+    """
+    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
+    messages = [{"role": "system", "content": sys_prompt},]
+    #~~ inject chat history to improve the prompt
+    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    messages.extend(formatted_messages)
+    messages.extend([{"role": "user", "content": user_prompt}])
+    #print(messages)
+    return get_completion_by_messages(messages = messages)
+
 
 #~~~~~~~~ Include today's date in prompt for responses regarding admission matters to be date senstitive. 
 from datetime import datetime
 
 @st.cache_data(ttl=300)
 def admissions_invoke_question(user_message):
-    today_date=datetime.today().strftime('%d/%m/%Y')
-    user_message = improve_prompt(user_message)
-    print(user_message)
-    response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
+    response_check_valid = check_question(user_message)
+    if response_check_valid=='Y':
+        today_date=datetime.today().strftime('%d/%m/%Y')
+        user_message = improve_prompt(user_message)
+        print(user_message)
+        response = qa_chain.invoke(f"{user_message}. Today's Date: {today_date}.")
+        response_text = response.get('result')
+    else:
+        response_text = response_check_valid
     #print(memory.load_memory_variables({}))
-    return response.get('result')
+    return response_text
 
 def clear_memory():
    memory.clear()
