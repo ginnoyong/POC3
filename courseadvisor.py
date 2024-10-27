@@ -234,6 +234,25 @@ def respond_conversation(user_prompt):
     #print(messages)
     return get_completion_by_messages(messages = messages)
 
+#~~~~ determine if question is valid
+def check_question(user_prompt):
+    sys_prompt = """Your task is to determine if the user question is about Polytechnic and ITE courses in Singapore, \
+        or to asks for suggestions of Polytechnic and ITE courses in Singapore.
+    Determine this in the context of the chat history also. 
+        Respond with 'Y' if the user question is about Polytechnic and ITE courses in Singapore \
+            or to asks for suggestions of Polytechnic and ITE courses in Singapore. 
+        Respond with 'N' if the user question is NOT.
+    Respond with only a single letter 'Y' or 'N'."""
+    #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
+    messages = [{"role": "system", "content": sys_prompt},]
+    #~~ inject chat history to improve the prompt
+    formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+    messages.extend(formatted_messages)
+    messages.extend([{"role": "user", "content": user_prompt}])
+    #print(messages)
+    response = get_completion_by_messages(messages = messages)
+    print(response)
+    return response
 
 #~~~~ invoke function to call from streamlit form
 from logics import improve_message_courses
@@ -247,25 +266,29 @@ def courses_invoke_question(user_message):
 
     #~~~ determine if web search and RAG retrieval is required for this user question
     df_list = None
-    if determine_retrieval(user_message)=='N':
-        response_text = respond_conversation(user_message)
-    else:
-        user_message = improve_prompt(user_message)
-        print(user_message)
-        response = qa_chain.invoke(user_message)
-        print(f"collection count:{vectordb_courses._collection.count()}")
-        print(response.get('result'))
-        if vectordb_courses._collection.count()==0:
-            df_list = None
-            response_text = f"""I am unable to retrieve any information that answers your question at this moment. \n\
-                Please try again later or search for specific courses at MOE Course Finder https://www.moe.gov.sg/coursefinder."""
+    if check_question(user_message)=='Y':
+        if determine_retrieval(user_message)=='N':
+            response_text = respond_conversation(user_message)
         else:
-            #~~~~~~~~ split JSON from response text, convert it to df
-            response_text, df_list = process_courses_response(response.get('result'))
-                
-        # reseting the vectordb_courses collection produces better responses. 
-        vectordb_courses.reset_collection()
-
+            user_message = improve_prompt(user_message)
+            print(user_message)
+            response = qa_chain.invoke(user_message)
+            print(f"collection count:{vectordb_courses._collection.count()}")
+            print(response.get('result'))
+            if vectordb_courses._collection.count()==0:
+                df_list = None
+                response_text = f"""I am unable to retrieve any information that answers your question at this moment. \n\
+                    Please try again later or search for specific courses at MOE Course Finder https://www.moe.gov.sg/coursefinder."""
+            else:
+                #~~~~~~~~ split JSON from response text, convert it to df
+                response_text, df_list = process_courses_response(response.get('result'))
+                    
+            # reseting the vectordb_courses collection produces better responses. 
+            vectordb_courses.reset_collection()
+    else:
+        response_text = "I can only answer questions about Polytechnic and ITE courses in Singapore. \
+            You can ask questions such as 'What are the ELR2B2 score requirements for business courses in NYP?', or \
+            'I like programming. What courses should I apply?', etc."
     #return response.get('result')
     return response_text, df_list
 
