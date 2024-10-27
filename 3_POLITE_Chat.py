@@ -18,7 +18,7 @@ def select_admissions():
     st.session_state.prompt_category = "Admissions"
 
 def select_courses():
-    st.session_state.prompt_category = "Courses"
+    st.session_state.prompt_category = "POLITE Courses"
 
 # region <--------- Streamlit App Configuration --------->
 st.set_page_config(
@@ -27,7 +27,7 @@ st.set_page_config(
 )
 # endregion <--------- Streamlit App Configuration --------->
 
-st.title("🎓 Polytechnic and ITE Education AI Chatbot")
+st.title("🎓 Post-Secondary School Education AI Chatbot")
 c1 = st.container(border=True)
 with c1:
     st.subheader(f"Ask questions about {st.session_state.prompt_category}")
@@ -35,7 +35,7 @@ with c1:
     with col1:
         st.button("Admissions", on_click=select_admissions)
     with col2:
-        st.button("Courses", on_click=select_courses)
+        st.button("POLITE Courses", on_click=select_courses)
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = None
@@ -46,7 +46,7 @@ def clear_chat_history():
         case "Admissions":
             cm_a()
             st.session_state.chat_history = None
-        case "Courses":
+        case "POLITE Courses":
             cm_c()
             st.session_state.chat_history = None
 
@@ -55,7 +55,7 @@ def get_chat_history():
     match st.session_state.prompt_category:
         case "Admissions":
             st.session_state.chat_history = gch_a()
-        case "Courses":
+        case "POLITE Courses":
             st.session_state.chat_history = gch_c()
 
 df_list = None
@@ -72,7 +72,7 @@ if form.form_submit_button("Submit"):
         match st.session_state.prompt_category:
             case "Admissions":
                 response = admissions_invoke_question(user_prompt)
-            case "Courses":
+            case "POLITE Courses":
                 response, df_list = courses_invoke_question(user_prompt)
                 #print(df_list.to_string())
             case _:
