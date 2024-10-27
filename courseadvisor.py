@@ -88,9 +88,10 @@ Better exam results gives a lower aggregate score. \
 Follow these steps to generate your answer:
 1. If the question is not about Poly and ITE courses in Singapore, \
     explain why you are unable to provide any answers and provide an example what he/she can ask.
-2. Find courses and similar courses in the context that contains one or more of the core terms or similar in the user question.
+2. Find courses and similar courses in the context that contains one or more of the key terms or similar in the user question.
 3. Extract key information of these courses, such as \
     School Name, Course Name, Course Code, Aggregate Score Range, Aggregate Score Type etc. \
+4. Formulate your answer to the user question based on these info that you find. 
 
 If your answer contains a list of courses that answers the user question, \
 generate the list in JSON format at the TOP of your answer. 
@@ -109,7 +110,7 @@ Sample of the JSON output of a list of courses delimited by <json_list>:
 </json_list>
 Wrap the list of JSON objects delimited by <json_list> and </json_list> with NO other delimiters.
 
-Then followed by a concise text summary or comment in response to the user question in your answer.
+Then followed by a concise text answer in response to the user question in your answer.
 At the end provide the link to MOE Course Finder: https://www.moe.gov.sg/coursefinder \
 and advise the user to verify the info or search for more courses. 
 
