@@ -288,3 +288,7 @@ def clear_memory():
 
 def get_chat_history():
    return memory.buffer
+
+def get_chat_history_msg():
+   formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+   return formatted_messages

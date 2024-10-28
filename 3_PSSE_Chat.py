@@ -2,8 +2,8 @@
 import streamlit as st
 import llm # <--- This is the helper function that we have created 🆕
 
-from admissionadvisor import admissions_invoke_question, clear_memory as cm_a, get_chat_history as gch_a
-from courseadvisor import courses_invoke_question, clear_memory as cm_c, get_chat_history as gch_c
+from admissionadvisor import admissions_invoke_question, clear_memory as cm_a, get_chat_history_msg as gch_msg_a, get_chat_history as gch_a
+from courseadvisor import courses_invoke_question, clear_memory as cm_c, get_chat_history_msg as gch_msg_c, get_chat_history as gch_c
 from utility import check_password  
 from logics import check_malicious
 
@@ -46,9 +46,11 @@ def clear_chat_history():
         case "Admission Exercises":
             cm_a()
             st.session_state.chat_history = None
+            st.session_state.messages = None
         case "POLITE Courses":
             cm_c()
             st.session_state.chat_history = None
+            st.session_state.messages = None
 
 #~~~ callback function to update chat history after every submit
 def get_chat_history():
@@ -57,6 +59,15 @@ def get_chat_history():
             st.session_state.chat_history = gch_a()
         case "POLITE Courses":
             st.session_state.chat_history = gch_c()
+
+#~~~ callback function to update chat history after every submit
+def get_chat_history_msg():
+    match st.session_state.prompt_category:
+        case "Admission Exercises":
+            st.session_state.messages = gch_msg_a()
+        case "POLITE Courses":
+            st.session_state.messages = gch_msg_c()
+
 
 df_list = None
 
@@ -89,14 +100,28 @@ if form.form_submit_button("Submit"):
         
         #~~~ update chat history after each submit
     get_chat_history()
+    get_chat_history_msg()
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display chat messages from history on app rerun
+#for message in st.session_state.messages:
+#    with st.chat_message(message["role"]):
+#        st.markdown(message["content"])
 
 c3 = st.container(border=True)
 with c3:
     with st.expander(f"Conversation Summary on {st.session_state.prompt_category}"):
-        st.write(f'''
-            {st.session_state.chat_history}
-        ''')
+        #st.write(f'''
+        #    {st.session_state.chat_history}
+        #''')
         #st.dataframe(st.session_state.chat_history)
+        if st.session_state.messages is not None:
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
 
 c4 = st.container(border=True)
 with c4:
@@ -111,3 +136,16 @@ with c4:
 
 #~~~ button to clear chat history
 st.sidebar.button("Start Over Conversation", on_click=clear_chat_history)
+
+
+#c5 = st.container(border=True)
+#with c5:
+    # Display chat messages from history on app rerun
+
+    # Accept user input
+    #if prompt := st.chat_input("What is up?"):
+        # Display user message in chat message container
+    #    with st.chat_message("user"):
+    #        st.markdown(prompt)
+        # Add user message to chat history
+    #    st.session_state.messages.append({"role": "user", "content": prompt})

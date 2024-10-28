@@ -300,6 +300,10 @@ def get_chat_history():
     #return pd.json_normalize(formatted_chat_messages)
     return memory.buffer
 
+def get_chat_history_msg():
+   formatted_messages = convert_messages_to_llm_format(memory.chat_memory.messages)
+   return formatted_messages
+
 #~~~~~~~~~~~~~~~~ Testing code
 #~~~~~~~~ Invoke and Response
 #response = tool_vectordb_qachain_invoke("what are the JC's in singapore?")
