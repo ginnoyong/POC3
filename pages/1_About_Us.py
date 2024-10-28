@@ -41,6 +41,9 @@ with c1:
             This includes application deadlines, eligibility criteria, required documents, and step-by-step guidance on how to apply.
     - It will be capable of answering general questions about the admission procedures, helping users understand important timelines and requirements \
              , ensuring that users receive accurate and timely information.
+    - Examples of question you can ask, \
+             'What admission exercises are for Polytechnic intake?', \
+             followed by 'For N-level student?'
     """)
 
     # Display the second use case
@@ -53,6 +56,9 @@ with c1:
     - By integrating with official MOE website, \
              the chatbot ensures that the information provided is current and accurate, \
              helping users navigate their options effectively.
+    - Examples of question you can ask, \
+             'what accountancy courses are there in polytechnics?', \
+             followed by 'If my elr2b2 score is 12, which of these should I apply?'
     """)
 
 c2 = st.container(border=True)
