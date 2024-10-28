@@ -113,7 +113,7 @@ with c5:
         - Use Case 2: RAG documents are loaded on-demand by performing Google searches \
              in specified MOE webpages when the user question is received \
              (https://www.moe.gov.sg/coursefinder/*, https://www.moe.gov.sg/coursefinder/coursedetail?course=*). \
-             See Methodology on why a different RAG loading method is not used. 
+             See Methodology on why this RAG loading method is different from use case 1. 
         
         **2. Conversation-Style Chat**
         - Chat history is incorported at key stages of the chatbot's process, including to refine user queries, \
