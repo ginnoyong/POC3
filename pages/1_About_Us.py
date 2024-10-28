@@ -12,17 +12,18 @@ c3 = st.container(border=True)
 with c3:
     st.subheader("Background")
     st.write("""As an academic staff member at a Polytechnic in Singapore, my responsibilities extend beyond teaching. \
-            One of the more challenging tasks is providing guidance during major admission exercises. The admission process can be complex, \
+            One of the less enjoyable tasks is providing guidance during major admission exercises. The admission process can be complex, \
             and academic staff can be less than being conversant in its knowledge as it is not part of our core function.""") 
     st.write("""With approximately 30,000 students enrolling in Polytechnics and ITE each year, there is a high demand for assistance from \
             secondary school leavers and their parents or guardians. During admission periods, the volume of inquiries can be overwhelming for \
             only the admission staff to manage alone.""")
-    st.write("""Additionally, some inquiries are course-specific, which can be challenging for foremost, the admission staff. \
+    st.write("""Additionally, some inquiries are course-specific, which can be challenging for the admission staff. \
             It can also be challenging even for the academic staff, if the question pertains to a course outside of their own department.""")
-    st.write("""This chatbot was designed to address these challenges. By providing accurate and timely information, \
+    st.write("""This chatbot was designed to address these challenges. By providing accurate and up-to-date information, \
             it aims to help prospects navigate the admission process more smoothly and efficiently. \
             It also helps to reduces the amount of preparation required, ultimately saving time for both admission and academic staff involved in advising duties.""")
-    st.write("""This app could also be used on ad-hoc basis by both students and staff for education and career guidance and progression planning.""")
+    st.write("""This chatbot could also be used on ad-hoc basis by both students and staff for education and career guidance \
+             and progression planning purposes.""")
 
 c1 = st.container(border=True)
 with c1:
@@ -104,8 +105,14 @@ with c5:
     st.subheader("Features")
     st.write("""
         **1. Live RAG sources**
-        - Use Case 1: RAG documents are loaded directly from webpages and PDF document hosted on official MOE website.  
-        - Use Case 2: RAG documents are loaded by performing on-demand Google searches in specified official MOE webpages.
+        - In order to achieve the objective of always up-to-date information, \
+             RAG documents are loaded directly from webpages or documents hosted on official websites
+        - Use Case 1: RAG documents are loaded directly from webpages \
+             and a PDF document hosted on MOE website (https://www.moe.gov.sg/post-secondary/admissions, \
+             https://www.moe.gov.sg/-/media/files/post-secondary/a-guide-to-post-secondary-admissions-exercises.pdf).  
+        - Use Case 2: RAG documents are loaded on-demand by performing Google searches \
+             in specified MOE webpages when the user question is received. \
+             (https://www.moe.gov.sg/coursefinder/*, https://www.moe.gov.sg/coursefinder/coursedetail?course=*)
         
         **2. Conversation-Style Chat**
         - Chat history is incorported at key stages of the chatbot's process, including to refine user queries, \
