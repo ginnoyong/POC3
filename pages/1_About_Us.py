@@ -111,8 +111,9 @@ with c5:
              and a PDF document hosted on MOE website (https://www.moe.gov.sg/post-secondary/admissions, \
              https://www.moe.gov.sg/-/media/files/post-secondary/a-guide-to-post-secondary-admissions-exercises.pdf).  
         - Use Case 2: RAG documents are loaded on-demand by performing Google searches \
-             in specified MOE webpages when the user question is received. \
-             (https://www.moe.gov.sg/coursefinder/*, https://www.moe.gov.sg/coursefinder/coursedetail?course=*)
+             in specified MOE webpages when the user question is received \
+             (https://www.moe.gov.sg/coursefinder/*, https://www.moe.gov.sg/coursefinder/coursedetail?course=*). \
+             See Methodology on why a different RAG loading method is not used. 
         
         **2. Conversation-Style Chat**
         - Chat history is incorported at key stages of the chatbot's process, including to refine user queries, \
