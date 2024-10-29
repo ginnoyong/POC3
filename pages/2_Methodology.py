@@ -46,11 +46,11 @@ with c3:
              but this led to an OpenAI RateLimitError, even when it is loading webpages from just one polytechnic.""")
     st.write("""To still achieve the goal of providing **up-to-date** information, an alternative approach was explored. \
              The **WebResearchRetriever** and **GoogleSearchAPIWrapper** packages from langchain_community are now being used to conduct **on-demand \
-             Internet searches** via Google's **Programmable Search Engine** whenever a user query is received. \
+             web searches** via Google's **Programmable Search Engine** whenever a user query is received. \
              This search engine has been specifically configured to search only within the following sites: \
              www.moe.gov.sg/coursefinder/coursedetail?course=* and www.moe.gov.sg/coursefinder/*. """)
     st.write("""Additionally, the **MultiQueryRetriever** is also utilized here to refine user prompts before passing them to the WebResearchRetriever.""")
-    st.write("""The CrewAI WebsiteSearchTool was also tested but yielded unsatisfactory results.  \
+    st.write("""CrewAI WebsiteSearchTool was also tested but yielded unsatisfactory results.  \
              Its limited configuration options and lack of visibility into the underlying processes made it challenging to optimize.""")
     
     st.image("PSSE-Methodology-courseadvisor.webp")

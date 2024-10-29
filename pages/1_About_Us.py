@@ -110,23 +110,23 @@ with c5:
         - Use Case 1: RAG documents are loaded directly from webpages \
              and a PDF document hosted on MOE website (https://www.moe.gov.sg/post-secondary/admissions, \
              https://www.moe.gov.sg/-/media/files/post-secondary/a-guide-to-post-secondary-admissions-exercises.pdf).  
-        - Use Case 2: RAG documents are loaded on-demand by performing Google searches \
-             in specified MOE webpages when the user question is received \
+        - Use Case 2: RAG documents are loaded on-demand by performing Google web searches \
+             in specified MOE webpages when user questions are received \
              (https://www.moe.gov.sg/coursefinder/*, https://www.moe.gov.sg/coursefinder/coursedetail?course=*). \
-             See Methodology on why a different RAG loading method is used. 
+             See Methodology for the reasons why a different RAG loading method is used. 
         
         **2. Conversation-Style Chat**
         - Chat history is incorported at key stages of the chatbot's process, including to refine user queries, \
              generating responses, and deciding if additional RAG (Retrieval-Augmented Generation) retrieval is necessary. 
         - This ensures more context-aware and accurate answers.
         
-        **3. Viewing and Clearing Conversation Summary**
-        - Users can view a summary of the current chat history for easy reference.
-        - The conversation summary can be cleared via a dedicated button, effectively resetting the chat.
+        **3. Viewing and Clearing Conversation Messages**
+        - Conversation messages are kept in display for easy referencing.
+        - Can be cleared via a dedicated button, effectively resetting the chat history.
         
         **4. Downloadable Course Details**
-        - Course details provided in the chatbot's responses are converted into a downloadable data frame.
-        - This feature allows users to easily compile and compare course information from multiple chatbot interactions for quick reference.
+        - Course details provided in the POLITE Courses AI Chatbot responses are also presented in downloadable data frame format.
+        - Allows users to easily compile and compare course information from multiple chatbot interactions.
              
     """)
     
