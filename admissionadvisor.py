@@ -164,8 +164,9 @@ verify your answer.
 
 Add a line break after your answer.
 
-Think about what the user might want to ask about admission exercises next \
+Think about what the user might want to ask about next \
     and suggest with 'Would you also like to find out...' after that.
+    Restrict suggestions only to things you know, i.e. about post-secondary school education admissions.
 
 <context>
 Different admission exercises are meant specifically for different types of students. 
