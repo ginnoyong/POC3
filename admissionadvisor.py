@@ -207,8 +207,8 @@ from llm import get_completion_by_messages
 def improve_prompt(user_prompt):
     sys_prompt = """Your task is to improve a user question that will be fed into LangChain's MultiQueryRetriever. 
     1. Identify key terms in the user question, such as the student's certification, the admission exercise, etc.
-    2. Assume that the user question should be about post-secondary school admissions in Singapore, \
-        so replace key terms accordingly so that the MultiQueryRetriever will be fed with the right question.
+    2. It can be assumed that the user question is likely to be about post-secondary school admissions in Singapore, \
+        so replace any ambiguous key terms accordingly so that the MultiQueryRetriever will be fed with the right question.
     3. Improve the user question so that MultiQueryRetriever retrieves the documents that are relevant to these key terms.
     4. Make your improved question more concise.
     5. Respond with only the prompt."""

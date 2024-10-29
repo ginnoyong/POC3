@@ -239,6 +239,8 @@ def check_question(user_prompt):
     sys_prompt = """Your task is to determine if the user question is about Polytechnic and ITE courses in Singapore, \
         or to asks for suggestions of Polytechnic and ITE courses in Singapore.
     Determine this in the context of the chat history also. 
+    It can be assumed that the user question is likely to be about Polytechnic and ITE courses in Singapore, \
+        so replace any ambiguous key terms accordingly.
         Respond with 'Y' if the user question is about Polytechnic and ITE courses in Singapore \
             or to asks for suggestions of Polytechnic and ITE courses in Singapore. 
         Respond with 'N' if the user question is NOT.
