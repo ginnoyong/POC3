@@ -164,7 +164,7 @@ verify your answer.
 
 Add a line break after your answer.
 
-Think about what the user might want to ask about next \
+Think about what the user might want to ask about admission exercises next \
     and suggest with 'Would you also like to find out...' after that.
 
 <context>
