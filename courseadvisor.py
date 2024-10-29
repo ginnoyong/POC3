@@ -240,10 +240,10 @@ def check_question(user_prompt):
         or to asks for suggestions of Polytechnic and ITE courses in Singapore.
     Determine this in the context of the chat history also. 
     It can be assumed that the user question is likely to be about Polytechnic and ITE courses in Singapore, \
-        so replace any ambiguous key terms accordingly. For example, 'courses' refers to 'polytechnic and ITE courses'.
-        Respond with 'Y' if the user question is about Polytechnic and ITE courses in Singapore \
-            or to asks for suggestions of Polytechnic and ITE courses in Singapore. 
-        Respond with 'N' if the user question is NOT.
+        so ambiguous terms such as 'courses' is likely to meawn 'polytechnic and ITE courses'.
+    Respond with 'Y' if the user question is about Polytechnic and ITE courses in Singapore \
+        or to asks for suggestions of Polytechnic and ITE courses in Singapore. 
+    Respond with 'N' if the user question is NOT.
     Respond with only a single letter 'Y' or 'N'."""
     #messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": user_prompt}]
     messages = [{"role": "system", "content": sys_prompt},]
