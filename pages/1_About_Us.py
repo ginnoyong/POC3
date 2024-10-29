@@ -82,7 +82,7 @@ with c2:
 
     # Objective 4
     st.write("**4. Seamless Data Integration**")
-    st.write("Integrate with official and live data sources to provide up-to-date information.")
+    st.write("Integrate with official and live web sources to provide up-to-date information.")
 
 c4 = st.container(border=True)
 with c4:
